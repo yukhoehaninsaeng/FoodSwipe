@@ -1,0 +1,162 @@
+export interface Restaurant {
+  id: string;
+  name: string;
+  category: string;
+  rating: number;
+  distance: string;
+  priceLevel: string;
+  address: string;
+  tags: string[];
+  imageUrl: string;
+  aiHint?: string;
+  isSponsored?: boolean;
+}
+
+export const RESTAURANTS: Restaurant[] = [
+  {
+    id: '1',
+    name: '담소원',
+    category: '한식',
+    rating: 4.7,
+    distance: '350m',
+    priceLevel: '₩₩',
+    address: '서울 마포구 합정동',
+    tags: ['점심특선', '혼밥가능'],
+    imageUrl: 'https://images.unsplash.com/photo-1617195737496-bc30194e3a19?w=600&h=800&q=85&auto=format&fit=crop',
+    aiHint: '최근 방문한 한식당 기반 추천',
+  },
+  {
+    id: '2',
+    name: '스시 오마카세 한나',
+    category: '일식',
+    rating: 4.9,
+    distance: '1.2km',
+    priceLevel: '₩₩₩₩',
+    address: '서울 강남구 청담동',
+    tags: ['오마카세', '예약필수'],
+    imageUrl: 'https://images.unsplash.com/photo-1553621042-f6e147245754?w=600&h=800&q=85&auto=format&fit=crop',
+    aiHint: '취향 벡터 93% 일치',
+  },
+  {
+    id: '3',
+    name: '브루클린 버거',
+    category: '양식',
+    rating: 4.4,
+    distance: '600m',
+    priceLevel: '₩₩',
+    address: '서울 마포구 서교동',
+    tags: ['수제버거', '테이크아웃'],
+    imageUrl: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&h=800&q=85&auto=format&fit=crop',
+  },
+  {
+    id: '4',
+    name: '빈티지 커피로스터스',
+    category: '카페',
+    rating: 4.6,
+    distance: '200m',
+    priceLevel: '₩₩',
+    address: '서울 마포구 연남동',
+    tags: ['스페셜티', '조용한분위기'],
+    imageUrl: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600&h=800&q=85&auto=format&fit=crop',
+    isSponsored: true,
+  },
+  {
+    id: '5',
+    name: '얼큰칼국수',
+    category: '한식',
+    rating: 4.3,
+    distance: '450m',
+    priceLevel: '₩',
+    address: '서울 마포구 망원동',
+    tags: ['칼국수', '국물맛집'],
+    imageUrl: 'https://images.unsplash.com/photo-1569050467447-ce54b3bbc37d?w=600&h=800&q=85&auto=format&fit=crop',
+    aiHint: '날씨 기반 추천 (흐림)',
+  },
+  {
+    id: '6',
+    name: '사보텐 돈카츠',
+    category: '일식',
+    rating: 4.5,
+    distance: '800m',
+    priceLevel: '₩₩',
+    address: '서울 마포구 합정동',
+    tags: ['돈카츠', '세트메뉴'],
+    imageUrl: 'https://images.unsplash.com/photo-1580822184713-fc5400e7fe10?w=600&h=800&q=85&auto=format&fit=crop',
+  },
+  {
+    id: '7',
+    name: '이탈리안 키친',
+    category: '양식',
+    rating: 4.6,
+    distance: '950m',
+    priceLevel: '₩₩₩',
+    address: '서울 마포구 서교동',
+    tags: ['파스타', '와인'],
+    imageUrl: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=600&h=800&q=85&auto=format&fit=crop',
+  },
+  {
+    id: '8',
+    name: '청춘 분식',
+    category: '분식',
+    rating: 4.2,
+    distance: '150m',
+    priceLevel: '₩',
+    address: '서울 마포구 합정동',
+    tags: ['떡볶이', '순대'],
+    imageUrl: 'https://images.unsplash.com/photo-1542010589005-d1eacc3918f2?w=600&h=800&q=85&auto=format&fit=crop',
+  },
+  {
+    id: '9',
+    name: '람엔야',
+    category: '일식',
+    rating: 4.7,
+    distance: '1.5km',
+    priceLevel: '₩₩',
+    address: '서울 마포구 망원동',
+    tags: ['라멘', '차슈'],
+    imageUrl: 'https://images.unsplash.com/photo-1569050467447-ce54b3bbc37d?w=600&h=800&q=85&auto=format&fit=crop',
+  },
+  {
+    id: '10',
+    name: '가든 샐러드바',
+    category: '양식',
+    rating: 4.3,
+    distance: '700m',
+    priceLevel: '₩₩',
+    address: '서울 마포구 서교동',
+    tags: ['샐러드', '건강식'],
+    imageUrl: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&h=800&q=85&auto=format&fit=crop',
+  },
+  {
+    id: '11',
+    name: '진미평양냉면',
+    category: '한식',
+    rating: 4.8,
+    distance: '2.1km',
+    priceLevel: '₩₩',
+    address: '서울 마포구 공덕동',
+    tags: ['평양냉면', '만두'],
+    imageUrl: 'https://images.unsplash.com/photo-1635363638580-c2809d049eee?w=600&h=800&q=85&auto=format&fit=crop',
+    aiHint: '지난주 좋아한 냉면집과 비슷',
+  },
+  {
+    id: '12',
+    name: '우리동네 치킨',
+    category: '치킨',
+    rating: 4.5,
+    distance: '300m',
+    priceLevel: '₩₩',
+    address: '서울 마포구 합정동',
+    tags: ['야식', '배달가능'],
+    imageUrl: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&h=800&q=85&auto=format&fit=crop',
+  },
+];
+
+export const FALLBACK_IMAGES: Record<string, string> = {
+  '한식': 'https://images.unsplash.com/photo-1617195737496-bc30194e3a19?w=600&h=800&q=80&auto=format&fit=crop',
+  '일식': 'https://images.unsplash.com/photo-1553621042-f6e147245754?w=600&h=800&q=80&auto=format&fit=crop',
+  '양식': 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=600&h=800&q=80&auto=format&fit=crop',
+  '카페': 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600&h=800&q=80&auto=format&fit=crop',
+  '분식': 'https://images.unsplash.com/photo-1542010589005-d1eacc3918f2?w=600&h=800&q=80&auto=format&fit=crop',
+  '치킨': 'https://images.unsplash.com/photo-1569565782892-1bdcf1b0b9c6?w=600&h=800&q=80&auto=format&fit=crop',
+};
