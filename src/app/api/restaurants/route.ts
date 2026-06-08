@@ -91,6 +91,7 @@ export async function GET(req: NextRequest) {
           category: mainCat,
           rating: Number((3.8 + Math.random() * 1.1).toFixed(1)),
           distance: formatDistance(place.distance || '500'),
+          distanceM: Number(place.distance || 500),
           priceLevel: getPriceLevel(place.category_name),
           address: place.road_address_name || place.address_name,
           tags: catParts.slice(2, 4),

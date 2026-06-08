@@ -752,3 +752,262 @@ html, body {
 .swipe-done i { font-size: 56px; opacity: 0.35; }
 .swipe-done h3 { font-size: 18px; font-weight: 600; color: var(--text-primary); }
 .swipe-done p { font-size: 13px; line-height: 1.5; }
+
+/* ─── 3D Card Flip ─── */
+.card-flip-container {
+  width: 100%;
+  height: 100%;
+  perspective: 1200px;
+}
+
+.card-flip-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-flip-inner.flipped { transform: rotateY(180deg); }
+
+.card-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 24px;
+  overflow: hidden;
+}
+
+.card-face-back {
+  transform: rotateY(180deg);
+  background: var(--bg);
+  border: 0.5px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.card-face-back::-webkit-scrollbar { display: none; }
+
+.card-back-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 14px 12px;
+  border-bottom: 0.5px solid var(--border-color);
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 1;
+  flex-shrink: 0;
+}
+
+.card-back-close {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 0.5px solid var(--border-color);
+  background: var(--surface);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.card-back-photos {
+  display: flex;
+  gap: 8px;
+  padding: 10px 14px;
+  overflow-x: auto;
+  flex-shrink: 0;
+  border-bottom: 0.5px solid var(--border-color);
+}
+
+.card-back-photos::-webkit-scrollbar { display: none; }
+
+.card-back-photo-thumb {
+  width: 110px;
+  height: 72px;
+  border-radius: 10px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.card-back-section {
+  padding: 10px 14px;
+  border-bottom: 0.5px solid var(--border-color);
+}
+
+.card-back-section-title {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.card-back-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 0.5px solid var(--border-color);
+}
+
+.card-back-menu-item:last-child { border-bottom: none; }
+
+.card-back-menu-emoji { font-size: 18px; width: 24px; text-align: center; flex-shrink: 0; }
+.card-back-menu-info { flex: 1; min-width: 0; }
+.card-back-menu-name { font-size: 12px; font-weight: 600; color: var(--text-primary); display: block; }
+.card-back-menu-desc { font-size: 10px; color: var(--text-muted); display: block; margin-top: 1px; }
+.card-back-menu-price { font-size: 11px; font-weight: 700; color: var(--accent); flex-shrink: 0; }
+
+.card-back-hours-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  padding: 3px 0;
+  color: var(--text-secondary);
+}
+
+.card-back-hours-row span:first-child { color: var(--text-muted); font-size: 10px; }
+
+.card-back-map-btns {
+  display: flex;
+  gap: 8px;
+  padding: 12px 14px;
+  flex-shrink: 0;
+  margin-top: auto;
+}
+
+.card-back-map-btn {
+  flex: 1;
+  padding: 10px;
+  border-radius: 12px;
+  border: 0.5px solid var(--border-color);
+  background: var(--surface);
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Pretendard Variable', 'Pretendard', -apple-system, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  transition: opacity 0.15s;
+}
+
+.card-back-map-btn:active { opacity: 0.7; }
+
+.card-back-map-btn-accent {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
+}
+
+/* ─── Distance filter bar ─── */
+.dist-filter-bar {
+  position: relative;
+  flex: 1;
+  height: 3px;
+  background: var(--border-color);
+  border-radius: 2px;
+}
+
+.dist-filter-fill {
+  position: absolute;
+  left: 0; top: 0;
+  height: 100%;
+  width: var(--pct, 50%);
+  background: var(--accent);
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+.dist-filter-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+  margin: -10px 0;
+  height: 24px;
+}
+
+.dist-filter-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 0 0 3px rgba(255,92,26,0.2);
+}
+
+.dist-filter-input::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+}
+
+/* Inside filter sheet */
+.dist-slider-track {
+  position: relative;
+  height: 4px;
+  background: var(--border-color);
+  border-radius: 2px;
+  margin-bottom: 8px;
+}
+
+.dist-slider-fill {
+  position: absolute;
+  left: 0; top: 0;
+  height: 100%;
+  width: var(--pct, 50%);
+  background: var(--accent);
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+.dist-slider-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+  margin: -10px 0;
+  height: 24px;
+}
+
+.dist-slider-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 0 0 3px rgba(255,92,26,0.2);
+}
+
+.dist-slider-input::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+}
