@@ -376,7 +376,7 @@ function WishlistItem({
         tabIndex={0}
         onClick={onTap}
         onKeyDown={e => e.key === 'Enter' && onTap()}
-        style={{ display: 'flex', alignItems: 'center', gap: 0, flex: 1, minWidth: 0 }}
+        style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, minWidth: 0 }}
       >
         <img
           src={restaurant.imageUrl}
