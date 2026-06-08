@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect, useRef, CSSProperties, Suspense } fro
 import { useSearchParams } from 'next/navigation';
 import TabBar from '@/components/TabBar';
 import SwipeCard from '@/components/SwipeCard';
-import { FOOD, CAFE, Restaurant, isOpen as checkIsOpen } from '@/data/restaurants';
+import { FOOD, CAFE, FALLBACK_IMAGES, Restaurant, isOpen as checkIsOpen } from '@/data/restaurants';
 import { useApp } from '@/contexts/AppContext';
 import { useTheme } from '@/contexts/ThemeContext';
 
@@ -34,6 +34,7 @@ const FOCUS_MAP: Record<string, string[]> = {
   ramen:   ['일식', '한식'],
 };
 
+const SESSION_SIZE = 10;
 const CUISINE_OPTIONS = ['한식', '일식', '양식', '중식', '분식', '치킨'];
 const CAFE_CATEGORIES = ['카페', '디저트'];
 
@@ -294,6 +295,186 @@ function FilterSheet({
   );
 }
 
+/* ── Menu picker + nav sheet ── */
+function MenuPickerSheet({
+  visible,
+  onClose,
+  candidates,
+  label,
+}: {
+  visible: boolean;
+  onClose: () => void;
+  candidates: Restaurant[];
+  label: string;
+}) {
+  const [picked, setPicked] = useState<Restaurant | null>(null);
+
+  useEffect(() => {
+    if (!visible) {
+      const t = setTimeout(() => setPicked(null), 380);
+      return () => clearTimeout(t);
+    }
+  }, [visible]);
+
+  return (
+    <>
+      <div
+        style={{
+          position: 'absolute', inset: 0,
+          background: 'rgba(0,0,0,0.5)',
+          opacity: visible ? 1 : 0,
+          pointerEvents: visible ? 'auto' : 'none',
+          transition: 'opacity 0.22s',
+          zIndex: 52,
+        }}
+        onClick={onClose}
+      />
+      <div
+        style={{
+          position: 'absolute', bottom: 0, left: 0, right: 0,
+          background: 'var(--bg)',
+          borderRadius: '20px 20px 0 0',
+          transform: `translateY(${visible ? 0 : 100}%)`,
+          transition: 'transform 0.32s cubic-bezier(0.4,0,0.2,1)',
+          zIndex: 53,
+          maxHeight: '80vh',
+          display: 'flex', flexDirection: 'column',
+          paddingBottom: 40,
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0 4px', flexShrink: 0 }}>
+          <div style={{ width: 36, height: 4, borderRadius: 2, background: 'var(--border-color)' }} />
+        </div>
+
+        {!picked ? (
+          <>
+            <div style={{ padding: '8px 16px 14px', flexShrink: 0 }}>
+              <div style={{ fontSize: 15, fontWeight: 700, letterSpacing: '-0.04em', color: 'var(--text-primary)' }}>
+                오늘 뭐 먹을까? 🍽️
+              </div>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 3 }}>
+                {label} 중에서 골라보세요
+              </div>
+            </div>
+            <div style={{ overflowY: 'auto', flex: 1, padding: '0 16px' }}>
+              {candidates.map((r) => (
+                <button
+                  key={r.id}
+                  onClick={() => setPicked(r)}
+                  style={{
+                    width: '100%', display: 'flex', alignItems: 'center', gap: 12,
+                    padding: '12px 0', background: 'none', border: 'none',
+                    borderBottom: '0.5px solid var(--border-color)',
+                    cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
+                  }}
+                >
+                  <img
+                    src={r.imageUrl}
+                    alt={r.name}
+                    style={{ width: 52, height: 52, borderRadius: 12, objectFit: 'cover', flexShrink: 0 }}
+                    onError={e => {
+                      const fb = FALLBACK_IMAGES[r.category];
+                      if (fb) (e.currentTarget as HTMLImageElement).src = fb;
+                    }}
+                  />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', letterSpacing: '-0.03em' }}>
+                      {r.name}
+                    </div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+                      {r.category} · {r.distance} · {r.priceLevel}
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 3, marginTop: 2 }}>
+                      <i className="ti ti-star-filled" style={{ color: 'var(--star)', fontSize: 10 }} aria-hidden="true" />
+                      <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{r.rating}</span>
+                    </div>
+                  </div>
+                  <i className="ti ti-chevron-right" style={{ color: 'var(--border-color)', fontSize: 16, flexShrink: 0 }} aria-hidden="true" />
+                </button>
+              ))}
+            </div>
+          </>
+        ) : (
+          <div style={{ padding: '8px 16px 0', flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
+              <img
+                src={picked.imageUrl}
+                alt={picked.name}
+                style={{ width: 64, height: 64, borderRadius: 16, objectFit: 'cover', flexShrink: 0 }}
+                onError={e => {
+                  const fb = FALLBACK_IMAGES[picked.category];
+                  if (fb) (e.currentTarget as HTMLImageElement).src = fb;
+                }}
+              />
+              <div>
+                <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>
+                  {picked.name}
+                </div>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 3 }}>
+                  {picked.category} · {picked.distance}
+                </div>
+                {picked.address && (
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 1, opacity: 0.7 }}>
+                    {picked.address}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 10, letterSpacing: '-0.02em' }}>
+              길찾기 앱 선택
+            </div>
+
+            <button
+              onClick={() => {
+                const q = encodeURIComponent(picked.name + (picked.address ? ' ' + picked.address : ''));
+                window.open(`https://map.kakao.com/?q=${q}`, '_blank', 'noopener noreferrer');
+              }}
+              style={{
+                width: '100%', padding: '14px 16px', borderRadius: 14, marginBottom: 10,
+                border: 'none', cursor: 'pointer', fontFamily: 'inherit',
+                background: '#FFDA00', color: '#1A1300',
+                fontSize: 14, fontWeight: 700, letterSpacing: '-0.03em',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+              }}
+            >
+              <span>🗺️</span> 카카오맵으로 길찾기
+            </button>
+
+            <button
+              onClick={() => {
+                const q = encodeURIComponent(picked.name + (picked.address ? ' ' + picked.address : ''));
+                window.open(`https://map.naver.com/v5/search/${q}`, '_blank', 'noopener noreferrer');
+              }}
+              style={{
+                width: '100%', padding: '14px 16px', borderRadius: 14, marginBottom: 16,
+                border: 'none', cursor: 'pointer', fontFamily: 'inherit',
+                background: '#03C75A', color: '#fff',
+                fontSize: 14, fontWeight: 700, letterSpacing: '-0.03em',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+              }}
+            >
+              <span>🧭</span> 네이버 지도로 길찾기
+            </button>
+
+            <button
+              onClick={() => setPicked(null)}
+              style={{
+                width: '100%', padding: '12px 16px', borderRadius: 14,
+                border: '0.5px solid var(--border-color)', background: 'var(--surface)',
+                color: 'var(--text-secondary)', fontSize: 13, fontWeight: 600,
+                cursor: 'pointer', fontFamily: 'inherit',
+              }}
+            >
+              다른 곳 선택
+            </button>
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
+
 /* ── Main page (inner) ── */
 function SwipePageInner() {
   const searchParams = useSearchParams();
@@ -321,6 +502,8 @@ function SwipePageInner() {
   const [toast, setToast] = useState('');
   const [toastVisible, setToastVisible] = useState(false);
   const [history, setHistory] = useState<Restaurant[]>([]);
+  const [sessionLiked, setSessionLiked] = useState<Restaurant[]>([]);
+  const [showMenuPicker, setShowMenuPicker] = useState(false);
   const [modeAnim, setModeAnim] = useState(false);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -335,6 +518,7 @@ function SwipePageInner() {
     setLoading(true);
     setDeck([]);
     setHistory([]);
+    setSessionLiked([]);
 
     try {
       const taste = localStorage.getItem('fs-taste');
@@ -361,12 +545,12 @@ function SwipePageInner() {
         : (currentMode === 'cafe' ? CAFE : FOOD);
 
       setAllFetched(fetched);
-      const built = buildDeck(fetched, currentMode, currentFilters);
-      setDeck(built.length > 0 ? built : (currentMode === 'cafe' ? [...CAFE] : [...FOOD]));
+      const built = buildDeck(fetched, currentMode, currentFilters).slice(0, SESSION_SIZE);
+      setDeck(built.length > 0 ? built : (currentMode === 'cafe' ? [...CAFE].slice(0, SESSION_SIZE) : [...FOOD].slice(0, SESSION_SIZE)));
     } catch {
       const local = currentMode === 'cafe' ? CAFE : FOOD;
       setAllFetched(local);
-      setDeck(buildDeck(local, currentMode, currentFilters));
+      setDeck(buildDeck(local, currentMode, currentFilters).slice(0, SESSION_SIZE));
     } finally {
       setLoading(false);
     }
@@ -389,7 +573,10 @@ function SwipePageInner() {
     setDeck(prev => {
       const [top, ...rest] = prev;
       if (top) {
-        if (direction === 'right' || direction === 'up') addToWishlist(top);
+        if (direction === 'right' || direction === 'up') {
+          addToWishlist(top);
+          setSessionLiked(h => [...h, top]);
+        }
         setHistory(h => [top, ...h]);
       }
       return rest;
@@ -401,13 +588,20 @@ function SwipePageInner() {
     const [last, ...rest] = history;
     setDeck(prev => [last, ...prev]);
     setHistory(rest);
+    setSessionLiked(prev => {
+      const idx = prev.findLastIndex(r => r.id === last.id);
+      if (idx === -1) return prev;
+      return [...prev.slice(0, idx), ...prev.slice(idx + 1)];
+    });
   };
 
   const handleFilterChange = useCallback((newFilters: Filters) => {
     setFilters(newFilters);
     const source = allFetched.length > 0 ? allFetched : (mode === 'cafe' ? CAFE : FOOD);
-    const built = buildDeck(source, mode, newFilters);
-    setDeck(built.length > 0 ? built : source);
+    const built = buildDeck(source, mode, newFilters).slice(0, SESSION_SIZE);
+    setDeck(built.length > 0 ? built : source.slice(0, SESSION_SIZE));
+    setSessionLiked([]);
+    setHistory([]);
   }, [mode, allFetched]);
 
   const hasActiveFilters =
@@ -520,33 +714,41 @@ function SwipePageInner() {
           </div>
         ) : deck.length === 0 ? (
           <div className="swipe-done">
-            <i className="ti ti-check-circle" aria-hidden="true" />
-            <h3>모두 탐색했어요!</h3>
-            <p>
-              {mode === 'cafe' ? '근처 카페를' : '주변 맛집을'} 다 살펴봤어요.<br />
-              찜 목록에서 저장한 곳을 확인해 보세요.
+            <div style={{ fontSize: 44, marginBottom: 4, lineHeight: 1 }}>
+              {sessionLiked.length > 0 ? '🎉' : '👀'}
+            </div>
+            <h3>
+              {sessionLiked.length > 0
+                ? `${sessionLiked.length}곳을 찜했어요!`
+                : '탐색 완료!'}
+            </h3>
+            <p style={{ marginBottom: 20 }}>
+              {sessionLiked.length > 0
+                ? '찜한 곳 중에서 오늘 갈 곳을 골라봐요.'
+                : '마음에 드는 곳이 있으셨나요?'}
             </p>
             <button
+              onClick={() => setShowMenuPicker(true)}
+              style={{
+                maxWidth: 260, width: '100%', padding: '14px 16px', borderRadius: 14,
+                border: 'none', background: 'var(--accent)',
+                color: '#fff', fontSize: 14, fontWeight: 700,
+                cursor: 'pointer', fontFamily: 'inherit',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                letterSpacing: '-0.02em',
+              }}
+            >
+              <i className="ti ti-map-pin" aria-hidden="true" />
+              메뉴 고르기
+            </button>
+            <button
               className="accent-cta"
-              style={{ maxWidth: 240, marginTop: 8 }}
+              style={{ maxWidth: 260, marginTop: 10, background: 'var(--surface)', color: 'var(--text-primary)', border: '0.5px solid var(--border-color)' }}
               onClick={() => loadRestaurants(mode, filters)}
             >
               <i className="ti ti-refresh" aria-hidden="true" />
-              다시 탐색하기
+              추천 더 받기
             </button>
-            {hasActiveFilters && (
-              <button
-                style={{
-                  maxWidth: 240, width: '100%', padding: '12px 16px', borderRadius: 14,
-                  border: '0.5px solid var(--border-color)', background: 'var(--surface)',
-                  color: 'var(--text-secondary)', fontSize: 13, fontWeight: 600,
-                  cursor: 'pointer', fontFamily: 'inherit',
-                }}
-                onClick={() => { handleFilterChange(DEFAULT_FILTERS); }}
-              >
-                필터 초기화 후 다시 보기
-              </button>
-            )}
           </div>
         ) : (
           [...visibleCards].reverse().map((restaurant, reversedIdx) => {
@@ -615,6 +817,14 @@ function SwipePageInner() {
           </div>
         </>
       )}
+
+      {/* ── Menu picker sheet ── */}
+      <MenuPickerSheet
+        visible={showMenuPicker}
+        onClose={() => setShowMenuPicker(false)}
+        candidates={sessionLiked.length > 0 ? sessionLiked : history.slice().reverse()}
+        label={sessionLiked.length > 0 ? '찜한 맛집' : '이번 세션 맛집'}
+      />
 
       {/* ── Filter sheet ── */}
       <FilterSheet

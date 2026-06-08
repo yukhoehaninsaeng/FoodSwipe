@@ -20,10 +20,7 @@ export const viewport: Viewport = {
 
 const THEME_INIT_SCRIPT = `
 (function(){
-  var t = localStorage.getItem('fs-theme');
-  if(!t){
-    t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  }
+  var t = localStorage.getItem('fs-theme') || 'light';
   document.documentElement.setAttribute('data-theme', t);
 })();
 `;
