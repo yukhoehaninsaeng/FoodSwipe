@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { AppProvider } from '@/contexts/AppContext';
+import AuthProvider from '@/components/AuthProvider';
 
 export const metadata: Metadata = {
   title: 'FoodSwipe',
@@ -42,11 +43,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
       <body>
-        <ThemeProvider>
-          <AppProvider>
-            {children}
-          </AppProvider>
-        </ThemeProvider>
+        <AuthProvider>
+          <ThemeProvider>
+            <AppProvider>
+              {children}
+            </AppProvider>
+          </ThemeProvider>
+        </AuthProvider>
       </body>
     </html>
   );

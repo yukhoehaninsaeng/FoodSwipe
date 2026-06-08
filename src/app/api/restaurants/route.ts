@@ -35,22 +35,31 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const lat  = searchParams.get('lat')  ?? process.env.NEXT_PUBLIC_DEFAULT_LAT ?? '37.5434';
   const lng  = searchParams.get('lng')  ?? process.env.NEXT_PUBLIC_DEFAULT_LNG ?? '126.9076';
-  const cats = searchParams.get('cats') ?? '';  // comma-separated cuisine keys
+  const cats = searchParams.get('cats') ?? '';
+  const mode = searchParams.get('mode') ?? 'food'; // 'food' | 'cafe'
 
   if (!KAKAO_API_KEY || KAKAO_API_KEY.startsWith('여기에')) {
-    // API 키 미설정 시 목업 데이터 반환
     const { RESTAURANTS } = await import('@/data/restaurants');
-    return NextResponse.json({ restaurants: RESTAURANTS, source: 'mock' });
+    const filtered = mode === 'cafe'
+      ? RESTAURANTS.filter(r => r.category === '카페' || r.category === '디저트')
+      : RESTAURANTS.filter(r => r.category !== '카페');
+    return NextResponse.json({ restaurants: filtered.length > 3 ? filtered : RESTAURANTS, source: 'mock' });
   }
 
-  const queries = cats
-    ? cats.split(',').map(k => CATEGORY_QUERIES[k] ?? k)
-    : ['음식점', '카페'];
+  // 카페 모드: CE7만 검색. 음식 모드: FD6 + 사용자 취향
+  const queries: Array<{ query: string; code: string }> = mode === 'cafe'
+    ? [
+        { query: '카페',   code: 'CE7' },
+        { query: '디저트', code: 'CE7' },
+      ]
+    : cats
+      ? cats.split(',').map(k => ({ query: CATEGORY_QUERIES[k] ?? k, code: 'FD6' }))
+      : [{ query: '음식점', code: 'FD6' }];
 
   const results: Record<string, boolean> = {};
   const restaurants: object[] = [];
 
-  for (const query of queries) {
+  for (const { query, code } of queries) {
     const url = new URL('https://dapi.kakao.com/v2/local/search/keyword.json');
     url.searchParams.set('query', query);
     url.searchParams.set('y', lat);
@@ -58,7 +67,7 @@ export async function GET(req: NextRequest) {
     url.searchParams.set('radius', '2000');
     url.searchParams.set('size', '10');
     url.searchParams.set('sort', 'distance');
-    url.searchParams.set('category_group_code', query === '카페' ? 'CE7' : 'FD6');
+    url.searchParams.set('category_group_code', code);
 
     try {
       const res = await fetch(url.toString(), {
