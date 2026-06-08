@@ -9,9 +9,10 @@ interface SwipeCardProps {
   stackIndex: number;
 }
 
-const SWIPE_THRESHOLD = 90;
+const SWIPE_THRESHOLD = 72;    // distance threshold (px)
+const VELOCITY_THRESHOLD = 380; // quick-flick threshold (px/s)
 const ROTATION_FACTOR = 0.08;
-const FLIP_DRAG_LIMIT = 6;
+const FLIP_DRAG_LIMIT = 10;    // min drag to cancel tap→flip
 
 function openKakaoSearch(name: string) {
   window.open(`https://map.kakao.com/link/search/${encodeURIComponent(name)}`, '_blank');
@@ -26,59 +27,95 @@ function openKakaoNavi(name: string, address: string) {
 }
 
 export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCardProps) {
-  const [dragX, setDragX] = useState(0);
-  const [dragY, setDragY] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
+  // Use refs for drag values so onPointerUp always sees the latest position
+  const dragXRef = useRef(0);
+  const dragYRef = useRef(0);
+  const [dragPos, setDragPos] = useState({ x: 0, y: 0 });
+  const isDraggingRef = useRef(false);
   const [flyDir, setFlyDir] = useState<'left' | 'right' | 'up' | null>(null);
   const [flipped, setFlipped] = useState(false);
   const startRef = useRef({ x: 0, y: 0 });
   const isDraggedRef = useRef(false);
+  const velocityRef = useRef({ vx: 0, vy: 0, prevX: 0, prevY: 0, time: 0 });
   const isTop = stackIndex === 0;
+
+  // Convenience aliases for render
+  const dragX = dragPos.x;
+  const dragY = dragPos.y;
 
   const onPointerDown = useCallback((e: React.PointerEvent) => {
     if (!isTop || flipped) return;
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-    setIsDragging(true);
+    isDraggingRef.current = true;
     isDraggedRef.current = false;
+    dragXRef.current = 0;
+    dragYRef.current = 0;
+    setDragPos({ x: 0, y: 0 });
     startRef.current = { x: e.clientX, y: e.clientY };
+    velocityRef.current = { vx: 0, vy: 0, prevX: e.clientX, prevY: e.clientY, time: Date.now() };
   }, [isTop, flipped]);
 
   const onPointerMove = useCallback((e: React.PointerEvent) => {
-    if (!isDragging) return;
+    if (!isDraggingRef.current) return;
     const dx = e.clientX - startRef.current.x;
     const dy = e.clientY - startRef.current.y;
+
+    // Update velocity
+    const now = Date.now();
+    const dt = now - velocityRef.current.time;
+    if (dt > 0) {
+      velocityRef.current = {
+        vx: (e.clientX - velocityRef.current.prevX) / dt * 1000,
+        vy: (e.clientY - velocityRef.current.prevY) / dt * 1000,
+        prevX: e.clientX,
+        prevY: e.clientY,
+        time: now,
+      };
+    }
+
     if (Math.abs(dx) > FLIP_DRAG_LIMIT || Math.abs(dy) > FLIP_DRAG_LIMIT) {
       isDraggedRef.current = true;
     }
-    setDragX(dx);
-    setDragY(dy);
-  }, [isDragging]);
+    dragXRef.current = dx;
+    dragYRef.current = dy;
+    setDragPos({ x: dx, y: dy });
+  }, []);
 
   const onPointerUp = useCallback(() => {
-    if (!isDragging) return;
-    setIsDragging(false);
+    if (!isDraggingRef.current) return;
+    isDraggingRef.current = false;
+
+    const dx = dragXRef.current;
+    const dy = dragYRef.current;
+    const { vx, vy } = velocityRef.current;
 
     if (!isDraggedRef.current) {
       setFlipped(f => !f);
-      setDragX(0);
-      setDragY(0);
+      dragXRef.current = 0;
+      dragYRef.current = 0;
+      setDragPos({ x: 0, y: 0 });
       return;
     }
 
-    if (dragX > SWIPE_THRESHOLD) {
+    const goRight = dx > SWIPE_THRESHOLD || (vx > VELOCITY_THRESHOLD && dx > 20);
+    const goLeft  = dx < -SWIPE_THRESHOLD || (vx < -VELOCITY_THRESHOLD && dx < -20);
+    const goUp    = (dy < -SWIPE_THRESHOLD || vy < -VELOCITY_THRESHOLD) && Math.abs(dx) < 60;
+
+    if (goRight) {
       setFlyDir('right');
       setTimeout(() => onSwipe('right'), 280);
-    } else if (dragX < -SWIPE_THRESHOLD) {
+    } else if (goLeft) {
       setFlyDir('left');
       setTimeout(() => onSwipe('left'), 280);
-    } else if (dragY < -SWIPE_THRESHOLD && Math.abs(dragX) < 60) {
+    } else if (goUp) {
       setFlyDir('up');
       setTimeout(() => onSwipe('up'), 280);
     } else {
-      setDragX(0);
-      setDragY(0);
+      dragXRef.current = 0;
+      dragYRef.current = 0;
+      setDragPos({ x: 0, y: 0 });
     }
-  }, [isDragging, dragX, dragY, onSwipe]);
+  }, [onSwipe]);
 
   const getFlyTransform = () => {
     if (flyDir === 'right') return `translateX(120vw) rotate(25deg)`;
@@ -102,7 +139,7 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
   } else if (isTop && !flipped) {
     const rot = dragX * ROTATION_FACTOR;
     transform = `translateX(${dragX}px) translateY(${dragY}px) rotate(${rot}deg)`;
-    transition = isDragging ? 'none' : 'transform 0.35s cubic-bezier(0.34,1.56,0.64,1)';
+    transition = isDraggingRef.current ? 'none' : 'transform 0.35s cubic-bezier(0.34,1.56,0.64,1)';
   } else {
     transform = getStackTransform();
     transition = 'transform 0.3s ease';
