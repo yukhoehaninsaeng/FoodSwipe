@@ -7,12 +7,53 @@ import ToggleSwitch from '@/components/ToggleSwitch';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useApp } from '@/contexts/AppContext';
 
-/* ── SNS 아이콘 SVGs ── */
+/* ── 서비스 메뉴 정의 ── */
+const SERVICES = [
+  {
+    emoji: '🍽️', label: '식사 추천', sub: '오늘 점심 뭐 먹지?',
+    href: '/swipe?mode=food',
+    bg: 'rgba(255,92,26,0.14)', fg: '#FF5C1A',
+  },
+  {
+    emoji: '☕', label: '카페 추천', sub: '커피 한잔 하러',
+    href: '/swipe?mode=cafe',
+    bg: 'rgba(108,60,20,0.14)', fg: '#8B5E3C',
+  },
+  {
+    emoji: '🍺', label: '안주 추천', sub: '오늘 한잔 할 때',
+    href: '/swipe?mode=food&focus=anju',
+    bg: 'rgba(230,160,0,0.14)', fg: '#B07800',
+  },
+  {
+    emoji: '🍰', label: '디저트 추천', sub: '달달한게 당길 때',
+    href: '/swipe?mode=cafe&focus=dessert',
+    bg: 'rgba(220,50,100,0.12)', fg: '#D03264',
+  },
+  {
+    emoji: '🍜', label: '라면 추천', sub: '국물 떙기는 날',
+    href: '/swipe?mode=food&focus=ramen',
+    bg: 'rgba(200,30,30,0.12)', fg: '#C02020',
+  },
+  {
+    emoji: '🍗', label: '치킨 추천', sub: '오늘은 치킨이지',
+    href: '/swipe?mode=food&focus=chicken',
+    bg: 'rgba(235,140,0,0.14)', fg: '#D08000',
+  },
+] as const;
+
+/* ── 빠른 메뉴 정의 ── */
+const QUICK_LINKS = [
+  { icon: 'ti-heart', label: '찜 목록', href: '/wishlist' },
+  { icon: 'ti-users', label: '그룹 매칭', href: '/matching' },
+  { icon: 'ti-diamond', label: 'Plus', href: '#', badge: 'NEW' },
+] as const;
+
+/* ── SNS 아이콘 ── */
 function KakaoIcon() {
   return (
-    <svg width="24" height="22" viewBox="0 0 24 22" fill="none" aria-hidden="true">
+    <svg width="22" height="20" viewBox="0 0 24 22" fill="none" aria-hidden="true">
       <path fillRule="evenodd" clipRule="evenodd"
-        d="M12 0C5.373 0 0 4.163 0 9.3c0 3.274 2.133 6.148 5.367 7.8l-1.37 5.102a.4.4 0 0 0 .591.44L10.7 19.35A13.8 13.8 0 0 0 12 19.44c0-.003 0-.003 0 0 6.627 0 12-4.163 12-9.14C24 4.163 18.627 0 12 0z"
+        d="M12 0C5.373 0 0 4.163 0 9.3c0 3.274 2.133 6.148 5.367 7.8l-1.37 5.102a.4.4 0 0 0 .591.44L10.7 19.35A13.8 13.8 0 0 0 12 19.44c6.627 0 12-4.163 12-9.14C24 4.163 18.627 0 12 0z"
         fill="#391B1B"
       />
     </svg>
@@ -21,7 +62,7 @@ function KakaoIcon() {
 
 function GoogleIcon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+    <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
       <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
       <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
       <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
@@ -30,41 +71,17 @@ function GoogleIcon() {
   );
 }
 
-function SocialBtn({
-  onClick, bg, border, children, label,
-}: {
-  onClick: () => void;
-  bg: string;
-  border?: string;
-  children: React.ReactNode;
-  label: string;
-}) {
+/* ── 카드 래퍼 ── */
+function Card({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-      <button
-        onClick={onClick}
-        aria-label={label}
-        style={{
-          width: 56, height: 56,
-          borderRadius: '50%',
-          background: bg,
-          border: border ?? 'none',
-          cursor: 'pointer',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-          transition: 'transform 0.12s, box-shadow 0.12s',
-        }}
-        onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.06)'; }}
-        onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)'; }}
-      >
-        {children}
-      </button>
-      <span style={{
-        fontSize: 10,
-        color: 'var(--text-muted)',
-        fontWeight: 500,
-        letterSpacing: '-0.01em',
-      }}>{label}</span>
+    <div style={{
+      background: 'var(--card-bg)',
+      border: '0.5px solid var(--border-color)',
+      borderRadius: 18,
+      overflow: 'hidden',
+      ...style,
+    }}>
+      {children}
     </div>
   );
 }
@@ -87,17 +104,41 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="app-shell">
-      <div className="page-header">
-        <h1 className="page-title">나</h1>
+    <div className="app-shell" style={{ background: 'var(--page-bg)' }}>
+      {/* ── 헤더 ── */}
+      <div style={{
+        height: 52, padding: '0 16px',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        background: 'var(--page-bg)',
+        flexShrink: 0,
+      }}>
+        <h1 style={{ fontSize: 20, fontWeight: 800, letterSpacing: '-0.04em', color: 'var(--text-primary)' }}>
+          나
+        </h1>
+        <button
+          className="icon-btn"
+          style={{ background: 'var(--card-bg)', border: '0.5px solid var(--border-color)' }}
+          aria-label="앱 설정"
+          onClick={() => {}}
+        >
+          <i className="ti ti-settings" aria-hidden="true" />
+        </button>
       </div>
 
-      <div className="settings-scroll">
+      {/* ── 스크롤 영역 ── */}
+      <div style={{
+        flex: 1,
+        overflowY: 'auto',
+        padding: '4px 14px 24px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 12,
+      }}>
 
-        {/* ── Profile / Login ── */}
-        <div className="settings-section">
+        {/* ── 프로필 카드 ── */}
+        <Card>
           {isLoading ? (
-            <div style={{ height: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ height: 80, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <div style={{
                 width: 20, height: 20, borderRadius: '50%',
                 border: '2px solid rgba(255,92,26,0.2)',
@@ -108,141 +149,281 @@ export default function SettingsPage() {
             </div>
 
           ) : isLoggedIn ? (
-            /* 로그인 상태 — 프로필 카드 */
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: 14,
-              padding: '16px',
-              background: 'var(--surface)',
-              border: '0.5px solid var(--border-color)',
-              borderRadius: 16,
-            }}>
+            /* 로그인 상태 */
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '16px' }}>
               {session.user?.image ? (
                 <img src={session.user.image} alt=""
-                  style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+                  style={{ width: 52, height: 52, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
               ) : (
                 <div style={{
-                  width: 48, height: 48, borderRadius: '50%',
+                  width: 52, height: 52, borderRadius: '50%',
                   background: 'var(--accent)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 20, fontWeight: 700, color: '#fff', flexShrink: 0,
+                  fontSize: 22, fontWeight: 700, color: '#fff', flexShrink: 0,
                 }}>
                   {(session.user?.name ?? '?')[0]}
                 </div>
               )}
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{
-                  fontSize: 15, fontWeight: 600, letterSpacing: '-0.02em',
+                  fontSize: 16, fontWeight: 700, letterSpacing: '-0.03em',
                   color: 'var(--text-primary)',
                   overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                 }}>
                   {session.user?.name}
                 </div>
                 <div style={{
-                  fontSize: 12, color: 'var(--text-muted)', marginTop: 3,
+                  fontSize: 12, color: 'var(--text-muted)', marginTop: 2,
                   overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                 }}>
                   {session.user?.email}
                 </div>
               </div>
+              <i className="ti ti-chevron-right" style={{ color: 'var(--text-muted)', fontSize: 16 }} />
             </div>
 
           ) : (
-            /* 비로그인 상태 — 원형 SNS 버튼 */
-            <div style={{
-              padding: '20px 16px 18px',
-              background: 'var(--surface)',
-              border: '0.5px solid var(--border-color)',
-              borderRadius: 16,
-              textAlign: 'center',
-            }}>
-              <p style={{
-                fontSize: 11, fontWeight: 500, letterSpacing: '0.04em',
-                color: 'var(--text-muted)', textTransform: 'uppercase',
-                marginBottom: 18,
+            /* 비로그인 상태 */
+            <div style={{ padding: '20px 16px' }}>
+              <div style={{
+                fontSize: 15, fontWeight: 700, color: 'var(--text-primary)',
+                letterSpacing: '-0.03em', marginBottom: 4,
               }}>
-                간편 로그인
-              </p>
-              <div style={{ display: 'flex', gap: 24, justifyContent: 'center' }}>
-                <SocialBtn
+                로그인하고 더 많은 기능을 이용해보세요
+              </div>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 18 }}>
+                찜 목록 동기화, 그룹 매칭 등
+              </div>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button
                   onClick={() => signIn('kakao', { callbackUrl: '/settings' })}
-                  bg="#FEE500"
-                  label="카카오"
+                  style={{
+                    flex: 1, padding: '11px', borderRadius: 12, border: 'none',
+                    background: '#FEE500', cursor: 'pointer', fontFamily: 'inherit',
+                    fontSize: 13, fontWeight: 700, color: '#3A1D1D',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+                    transition: 'opacity 0.15s',
+                  }}
                 >
                   <KakaoIcon />
-                </SocialBtn>
-                <SocialBtn
+                  카카오
+                </button>
+                <button
                   onClick={() => signIn('google', { callbackUrl: '/settings' })}
-                  bg="#ffffff"
-                  border="1.5px solid #E8E8E8"
-                  label="구글"
+                  style={{
+                    flex: 1, padding: '11px', borderRadius: 12,
+                    border: '1px solid var(--border-color)',
+                    background: 'var(--card-bg)', cursor: 'pointer', fontFamily: 'inherit',
+                    fontSize: 13, fontWeight: 700, color: 'var(--text-primary)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+                    transition: 'opacity 0.15s',
+                  }}
                 >
                   <GoogleIcon />
-                </SocialBtn>
+                  구글
+                </button>
               </div>
             </div>
           )}
-        </div>
+        </Card>
 
-        {/* ── 화면 모드 ── */}
-        <div className="settings-section">
-          <div className="settings-section-title">화면 모드</div>
-          <div className="settings-group">
-            <div className="settings-cell">
-              <span className="settings-cell-label">테마</span>
-              <div className="segment-control" style={{ flexShrink: 0 }}>
+        {/* ── 서비스 ── */}
+        <Card>
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: '14px 16px 10px',
+          }}>
+            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.03em' }}>
+              장소 추천
+            </span>
+            <i className="ti ti-chevron-right" style={{ color: 'var(--text-muted)', fontSize: 14 }} />
+          </div>
+
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: 0,
+          }}>
+            {SERVICES.map((svc, i) => {
+              const isRightCol = i % 2 === 1;
+              const isLastRow = i >= SERVICES.length - 2;
+              return (
                 <button
-                  className={`segment-btn${theme === 'dark' ? ' active' : ''}`}
-                  onClick={() => setTheme('dark')}
+                  key={svc.label}
+                  onClick={() => router.push(svc.href)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 12,
+                    padding: '12px 16px',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontFamily: 'inherit',
+                    textAlign: 'left',
+                    borderTop: i >= 2 ? '0.5px solid var(--border-color)' : 'none',
+                    borderLeft: isRightCol ? '0.5px solid var(--border-color)' : 'none',
+                    borderBottom: isLastRow ? 'none' : undefined,
+                    transition: 'background 0.12s',
+                  }}
+                  onPointerDown={e => {
+                    (e.currentTarget as HTMLButtonElement).style.background = 'var(--page-bg)';
+                  }}
+                  onPointerUp={e => {
+                    (e.currentTarget as HTMLButtonElement).style.background = 'none';
+                  }}
+                  onPointerLeave={e => {
+                    (e.currentTarget as HTMLButtonElement).style.background = 'none';
+                  }}
                 >
-                  다크
+                  {/* Icon circle */}
+                  <div style={{
+                    width: 44, height: 44, borderRadius: 14, flexShrink: 0,
+                    background: svc.bg,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 22,
+                  }}>
+                    {svc.emoji}
+                  </div>
+                  {/* Text */}
+                  <div>
+                    <div style={{
+                      fontSize: 13, fontWeight: 700, color: 'var(--text-primary)',
+                      letterSpacing: '-0.02em', lineHeight: 1.2,
+                    }}>
+                      {svc.label}
+                    </div>
+                    <div style={{
+                      fontSize: 10, color: 'var(--text-muted)',
+                      marginTop: 2, fontWeight: 400,
+                    }}>
+                      {svc.sub}
+                    </div>
+                  </div>
                 </button>
-                <button
-                  className={`segment-btn${theme === 'light' ? ' active' : ''}`}
-                  onClick={() => setTheme('light')}
-                >
-                  라이트
-                </button>
-              </div>
+              );
+            })}
+          </div>
+        </Card>
+
+        {/* ── 빠른 메뉴 ── */}
+        <Card>
+          <div style={{ display: 'flex' }}>
+            {QUICK_LINKS.map((link, i) => (
+              <button
+                key={link.label}
+                onClick={() => router.push(link.href)}
+                style={{
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 6,
+                  padding: '16px 8px',
+                  background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit',
+                  borderLeft: i > 0 ? '0.5px solid var(--border-color)' : 'none',
+                  position: 'relative',
+                }}
+              >
+                <i className={`ti ${link.icon}`} style={{ fontSize: 22, color: 'var(--text-secondary)' }} />
+                <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)', letterSpacing: '-0.01em' }}>
+                  {link.label}
+                </span>
+                {'badge' in link && link.badge && (
+                  <span style={{
+                    position: 'absolute', top: 12, right: 'calc(50% - 18px)',
+                    background: 'var(--accent)', color: '#fff',
+                    fontSize: 8, fontWeight: 700, padding: '1px 5px', borderRadius: 10,
+                  }}>
+                    {link.badge}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+        </Card>
+
+        {/* ── 화면 설정 ── */}
+        <Card>
+          <div style={{ padding: '10px 16px 2px' }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+              화면 모드
             </div>
           </div>
-        </div>
+          <div style={{ display: 'flex', alignItems: 'center', padding: '10px 16px 14px', gap: 12 }}>
+            <span style={{ flex: 1, fontSize: 14, fontWeight: 500, color: 'var(--text-primary)' }}>테마</span>
+            <div className="segment-control">
+              <button className={`segment-btn${theme === 'dark' ? ' active' : ''}`} onClick={() => setTheme('dark')}>다크</button>
+              <button className={`segment-btn${theme === 'light' ? ' active' : ''}`} onClick={() => setTheme('light')}>라이트</button>
+            </div>
+          </div>
+        </Card>
 
         {/* ── 알림 ── */}
-        <div className="settings-section">
-          <div className="settings-section-title">알림</div>
-          <div className="settings-group">
-            <div className="settings-cell">
-              <span className="settings-cell-label">신규 오픈 알림</span>
-              <ToggleSwitch checked={notifNewOpen} onChange={setNotifNewOpen} label="신규 오픈 알림" />
-            </div>
-            <div className="settings-cell">
-              <span className="settings-cell-label">그룹 매칭 알림</span>
-              <ToggleSwitch checked={notifGroupMatch} onChange={setNotifGroupMatch} label="그룹 매칭 알림" />
+        <Card>
+          <div style={{ padding: '10px 16px 2px' }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+              알림
             </div>
           </div>
-        </div>
+          {[
+            { label: '신규 오픈 알림', checked: notifNewOpen, onChange: setNotifNewOpen },
+            { label: '그룹 매칭 알림', checked: notifGroupMatch, onChange: setNotifGroupMatch },
+          ].map((item, i) => (
+            <div
+              key={item.label}
+              style={{
+                display: 'flex', alignItems: 'center',
+                padding: '12px 16px',
+                borderTop: i === 0 ? '0.5px solid var(--border-color)' : 'none',
+                borderBottom: i === 0 ? '0.5px solid var(--border-color)' : 'none',
+              }}
+            >
+              <span style={{ flex: 1, fontSize: 14, fontWeight: 500, color: 'var(--text-primary)' }}>{item.label}</span>
+              <ToggleSwitch checked={item.checked} onChange={item.onChange} label={item.label} />
+            </div>
+          ))}
+          <div style={{ height: 4 }} />
+        </Card>
 
         {/* ── 계정 ── */}
-        <div className="settings-section">
-          <div className="settings-section-title">계정</div>
-          <div className="settings-group">
-            <div className="settings-cell" style={{ cursor: 'pointer' }}>
-              <span className="settings-cell-label">FoodSwipe Plus</span>
-              <span className="settings-cell-value">업그레이드</span>
-              <i className="ti ti-chevron-right settings-cell-chevron" aria-hidden="true" />
+        <Card>
+          <div style={{ padding: '10px 16px 2px' }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+              계정
             </div>
-            {isLoggedIn && (
-              <div className="settings-cell" style={{ cursor: 'pointer' }} onClick={handleLogout}>
-                <span className="settings-cell-label settings-cell-danger">로그아웃</span>
-              </div>
-            )}
           </div>
-        </div>
+          <div style={{
+            display: 'flex', alignItems: 'center',
+            padding: '13px 16px',
+            borderTop: '0.5px solid var(--border-color)',
+            cursor: 'pointer',
+          }}>
+            <span style={{ flex: 1, fontSize: 14, fontWeight: 500, color: 'var(--text-primary)' }}>FoodSwipe Plus</span>
+            <span style={{ fontSize: 11, color: 'var(--accent)', fontWeight: 600, marginRight: 6 }}>업그레이드</span>
+            <i className="ti ti-chevron-right" style={{ color: 'var(--text-muted)', fontSize: 14 }} />
+          </div>
+          {isLoggedIn && (
+            <div
+              style={{
+                display: 'flex', alignItems: 'center',
+                padding: '13px 16px',
+                borderTop: '0.5px solid var(--border-color)',
+                cursor: 'pointer',
+              }}
+              onClick={handleLogout}
+            >
+              <span style={{ fontSize: 14, fontWeight: 500, color: '#FF3B30' }}>로그아웃</span>
+            </div>
+          )}
+          <div style={{ height: 4 }} />
+        </Card>
 
+        {/* 버전 */}
         <div style={{
-          textAlign: 'center', padding: '16px 0 8px',
-          fontSize: 11, color: 'var(--text-muted)',
-          letterSpacing: '0.02em',
+          textAlign: 'center', padding: '4px 0 8px',
+          fontSize: 11, color: 'var(--text-muted)', letterSpacing: '0.02em',
         }}>
           FoodSwipe v3.0.0
         </div>

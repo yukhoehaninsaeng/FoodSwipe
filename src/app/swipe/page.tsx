@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useCallback, useEffect, useRef, CSSProperties } from 'react';
+import { useState, useCallback, useEffect, useRef, CSSProperties, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import TabBar from '@/components/TabBar';
 import SwipeCard from '@/components/SwipeCard';
 import { FOOD, CAFE, Restaurant, isOpen as checkIsOpen } from '@/data/restaurants';
@@ -13,6 +14,7 @@ interface Filters {
   maxDistanceKm: number;
   minRating: number;
   excludeCuisines: string[];
+  focusCuisines: string[];  // when set, only show these (overrides exclude)
   openNow: boolean;
 }
 
@@ -20,7 +22,16 @@ const DEFAULT_FILTERS: Filters = {
   maxDistanceKm: 5,
   minRating: 0,
   excludeCuisines: [],
+  focusCuisines: [],
   openNow: false,
+};
+
+// Maps URL `focus` param → cuisine categories to show
+const FOCUS_MAP: Record<string, string[]> = {
+  anju:    ['한식', '치킨', '분식'],
+  dessert: ['디저트'],
+  chicken: ['치킨'],
+  ramen:   ['일식', '한식'],
 };
 
 const CUISINE_OPTIONS = ['한식', '일식', '양식', '중식', '분식', '치킨'];
@@ -41,7 +52,12 @@ function buildDeck(restaurants: Restaurant[], mode: SwipeMode, filters: Filters)
     const dm = r.distanceM ?? parseDistanceM(r.distance);
     if (dm > filters.maxDistanceKm * 1000) return false;
     if (filters.minRating > 0 && r.rating < filters.minRating) return false;
-    if (filters.excludeCuisines.includes(r.category)) return false;
+    // focus: whitelist takes priority over exclude
+    if (filters.focusCuisines.length > 0) {
+      if (!filters.focusCuisines.includes(r.category)) return false;
+    } else if (filters.excludeCuisines.includes(r.category)) {
+      return false;
+    }
     if (filters.openNow && r.hours && !checkIsOpen(r.hours)) return false;
     return true;
   });
@@ -244,6 +260,25 @@ function FilterSheet({
           </div>
         </div>
 
+        {/* Clear focus */}
+        {filters.focusCuisines.length > 0 && (
+          <div style={{
+            padding: '8px 12px', borderRadius: 12, marginBottom: 12,
+            background: 'rgba(255,92,26,0.08)', border: '0.5px solid rgba(255,92,26,0.2)',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          }}>
+            <span style={{ fontSize: 12, color: 'var(--accent)', fontWeight: 600 }}>
+              {filters.focusCuisines.join(' · ')} 모드 적용 중
+            </span>
+            <button
+              onClick={() => onChange({ ...filters, focusCuisines: [] })}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: 'var(--accent)', fontWeight: 700 }}
+            >
+              해제
+            </button>
+          </div>
+        )}
+
         <button
           onClick={() => onChange(DEFAULT_FILTERS)}
           style={{
@@ -259,14 +294,29 @@ function FilterSheet({
   );
 }
 
-/* ── Main page ── */
-export default function SwipePage() {
+/* ── Main page (inner) ── */
+function SwipePageInner() {
+  const searchParams = useSearchParams();
   const { addToWishlist } = useApp();
-  const [mode, setMode] = useState<SwipeMode>('food');
+
+  // Derive initial mode + filters from URL params (only on first render)
+  const initMode = (() => {
+    const m = searchParams.get('mode');
+    return (m === 'food' || m === 'cafe') ? m as SwipeMode : 'food';
+  })();
+  const initFocus = (() => {
+    const f = searchParams.get('focus');
+    return f && FOCUS_MAP[f] ? FOCUS_MAP[f] : [];
+  })();
+
+  const [mode, setMode] = useState<SwipeMode>(initMode);
   const [deck, setDeck] = useState<Restaurant[]>([]);
   const [allFetched, setAllFetched] = useState<Restaurant[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
+  const [filters, setFilters] = useState<Filters>({
+    ...DEFAULT_FILTERS,
+    focusCuisines: initFocus,
+  });
   const [showFilters, setShowFilters] = useState(false);
   const [toast, setToast] = useState('');
   const [toastVisible, setToastVisible] = useState(false);
@@ -578,7 +628,29 @@ export default function SwipePage() {
         mode={mode}
       />
 
+      {/* Focus badge */}
+      {filters.focusCuisines.length > 0 && !loading && (
+        <div style={{
+          position: 'absolute', top: 52, left: '50%',
+          transform: 'translateX(-50%)',
+          background: 'var(--accent)', color: '#fff',
+          fontSize: 10, fontWeight: 700, padding: '3px 12px',
+          borderRadius: 20, pointerEvents: 'none', zIndex: 10,
+          letterSpacing: '-0.01em',
+        }}>
+          {filters.focusCuisines.join(' · ')} 모드
+        </div>
+      )}
+
       <TabBar />
     </div>
+  );
+}
+
+export default function SwipePage() {
+  return (
+    <Suspense>
+      <SwipePageInner />
+    </Suspense>
   );
 }
