@@ -44,8 +44,14 @@ html, body {
   height: 100%;
   background: #080808;
   color: var(--text-primary);
-  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  /* Pretendard Variable 우선, iOS system 폴백 */
+  font-family: 'Pretendard Variable', 'Pretendard', -apple-system, 'Apple SD Gothic Neo',
+               BlinkMacSystemFont, 'Noto Sans KR', sans-serif;
+  font-feature-settings: 'kern' 1;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  word-break: keep-all;  /* 한국어 단어 단위 줄바꿈 */
   overflow: hidden;
 }
 
@@ -102,7 +108,7 @@ html, body {
 
 .tab-item.active { color: var(--accent); }
 .tab-item i { font-size: 22px; line-height: 1; }
-.tab-item span { font-size: 9px; font-weight: 500; letter-spacing: 0.04em; }
+.tab-item span { font-size: 9px; font-weight: 600; letter-spacing: 0.02em; }
 
 /* ─── Card Stack ─── */
 .card-stack {
@@ -176,9 +182,9 @@ html, body {
 }
 
 .card-name {
-  font-size: 26px;
-  font-weight: 600;
-  letter-spacing: -0.04em;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.05em;
   color: #ffffff;
   line-height: 1.1;
   margin-bottom: 6px;
@@ -454,7 +460,7 @@ html, body {
 .page-title {
   font-size: 22px;
   font-weight: 700;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.04em;
   color: var(--text-primary);
 }
 
@@ -518,10 +524,10 @@ html, body {
 .settings-section { margin-bottom: 28px; }
 
 .settings-section-title {
-  font-size: 11px;
-  font-weight: 500;
+  font-size: 10px;
+  font-weight: 600;
   color: var(--text-muted);
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   margin-bottom: 8px;
   padding: 0 4px;
@@ -542,7 +548,7 @@ html, body {
 }
 
 .settings-cell:last-child { border-bottom: none; }
-.settings-cell-label { flex: 1; font-size: 14px; font-weight: 500; color: var(--text-primary); }
+.settings-cell-label { flex: 1; font-size: 14px; font-weight: 500; letter-spacing: -0.02em; color: var(--text-primary); }
 .settings-cell-value { font-size: 12px; color: var(--text-muted); margin-right: 6px; }
 .settings-cell-chevron { font-size: 14px; color: var(--text-muted); }
 .settings-cell-danger { color: #FF3B30; }
@@ -552,22 +558,24 @@ html, body {
   background: var(--surface);
   border: 0.5px solid var(--border-color);
   border-radius: 10px;
-  padding: 2px;
+  padding: 3px;
   gap: 2px;
+  flex-shrink: 0;
 }
 
 .segment-btn {
-  flex: 1;
-  padding: 7px 12px;
-  font-size: 13px;
+  padding: 6px 14px;
+  font-size: 12px;
   font-weight: 600;
+  letter-spacing: -0.01em;
   border: none;
   cursor: pointer;
-  border-radius: 8px;
-  transition: all 0.2s;
+  border-radius: 7px;
+  transition: all 0.18s;
   color: var(--text-muted);
   background: transparent;
-  font-family: 'Pretendard', -apple-system, sans-serif;
+  white-space: nowrap;
+  font-family: 'Pretendard Variable', 'Pretendard', -apple-system, sans-serif;
 }
 
 .segment-btn.active { background: var(--accent); color: #ffffff; }
