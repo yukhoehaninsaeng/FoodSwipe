@@ -239,59 +239,58 @@ export default function SettingsPage() {
             <i className="ti ti-chevron-right" style={{ color: 'var(--text-muted)', fontSize: 14 }} />
           </div>
 
-          {/* 서비스 그리드 — 2열 명시적 행으로 렌더 */}
-          {([0, 2, 4] as const).map(rowStart => (
-            <div
-              key={rowStart}
-              style={{
-                display: 'flex',
-                borderTop: '0.5px solid var(--border-color)',
-              }}
-            >
-              {SERVICES.slice(rowStart, rowStart + 2).map((svc, colIdx) => (
-                <button
-                  key={svc.label}
-                  onClick={() => router.push(svc.href)}
-                  style={{
-                    flex: 1,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 10,
-                    padding: '13px 14px',
-                    background: 'transparent',
-                    border: 'none',
-                    borderLeft: colIdx === 1 ? '0.5px solid var(--border-color)' : 'none',
-                    cursor: 'pointer',
-                    fontFamily: 'inherit',
-                    textAlign: 'left',
-                  }}
-                  onPointerDown={e => { (e.currentTarget as HTMLElement).style.background = 'var(--page-bg)'; }}
-                  onPointerUp={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
-                  onPointerLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
-                >
+          {/* 서비스 그리드 — CSS grid 2열 */}
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              borderTop: '0.5px solid var(--border-color)',
+            }}
+          >
+            {SERVICES.map((svc, i) => (
+              <button
+                key={svc.label}
+                onClick={() => router.push(svc.href)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  padding: '13px 14px',
+                  background: 'transparent',
+                  fontFamily: 'inherit',
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                  borderTop: 'none',
+                  borderRight: 'none',
+                  borderBottom: i < SERVICES.length - 2 ? '0.5px solid var(--border-color)' : 'none',
+                  borderLeft: i % 2 === 1 ? '0.5px solid var(--border-color)' : 'none',
+                }}
+                onPointerDown={e => { (e.currentTarget as HTMLElement).style.background = 'var(--page-bg)'; }}
+                onPointerUp={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+                onPointerLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+              >
+                <div style={{
+                  width: 44, height: 44, borderRadius: 14, flexShrink: 0,
+                  background: svc.bg,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 22,
+                }}>
+                  {svc.emoji}
+                </div>
+                <div>
                   <div style={{
-                    width: 44, height: 44, borderRadius: 14, flexShrink: 0,
-                    background: svc.bg,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 22,
+                    fontSize: 13, fontWeight: 700, color: 'var(--text-primary)',
+                    letterSpacing: '-0.02em', lineHeight: 1.2,
                   }}>
-                    {svc.emoji}
+                    {svc.label}
                   </div>
-                  <div>
-                    <div style={{
-                      fontSize: 13, fontWeight: 700, color: 'var(--text-primary)',
-                      letterSpacing: '-0.02em', lineHeight: 1.2,
-                    }}>
-                      {svc.label}
-                    </div>
-                    <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>
-                      {svc.sub}
-                    </div>
+                  <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>
+                    {svc.sub}
                   </div>
-                </button>
-              ))}
-            </div>
-          ))}
+                </div>
+              </button>
+            ))}
+          </div>
           <div style={{ height: 4 }} />
         </Card>
 
