@@ -599,8 +599,8 @@ function SwipePageInner() {
               onClick={handleUndo}
               disabled={history.length === 0}
               style={{
-                width: 38, height: 38, fontSize: 16,
-                opacity: history.length > 0 ? 1 : 0.28,
+                width: 40, height: 40, fontSize: 17,
+                opacity: history.length > 0 ? 1 : 0.25,
                 color: 'var(--text-secondary)',
               }}
             >
@@ -608,9 +608,6 @@ function SwipePageInner() {
             </button>
             <button className="action-btn btn-nope" aria-label="건너뜀" onClick={() => handleSwipe('left')}>
               <i className="ti ti-x" aria-hidden="true" />
-            </button>
-            <button className="action-btn btn-super" aria-label="슈퍼 좋아요" onClick={() => handleSwipe('up')}>
-              <i className="ti ti-star" aria-hidden="true" />
             </button>
             <button className="action-btn btn-like" aria-label="좋아요" onClick={() => handleSwipe('right')}>
               <i className="ti ti-heart" aria-hidden="true" />

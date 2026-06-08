@@ -239,44 +239,36 @@ export default function SettingsPage() {
             <i className="ti ti-chevron-right" style={{ color: 'var(--text-muted)', fontSize: 14 }} />
           </div>
 
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gap: 0,
-          }}>
-            {SERVICES.map((svc, i) => {
-              const isRightCol = i % 2 === 1;
-              const isLastRow = i >= SERVICES.length - 2;
-              return (
+          {/* 서비스 그리드 — 2열 명시적 행으로 렌더 */}
+          {([0, 2, 4] as const).map(rowStart => (
+            <div
+              key={rowStart}
+              style={{
+                display: 'flex',
+                borderTop: '0.5px solid var(--border-color)',
+              }}
+            >
+              {SERVICES.slice(rowStart, rowStart + 2).map((svc, colIdx) => (
                 <button
                   key={svc.label}
                   onClick={() => router.push(svc.href)}
                   style={{
+                    flex: 1,
                     display: 'flex',
                     alignItems: 'center',
-                    gap: 12,
-                    padding: '12px 16px',
-                    background: 'none',
+                    gap: 10,
+                    padding: '13px 14px',
+                    background: 'transparent',
                     border: 'none',
+                    borderLeft: colIdx === 1 ? '0.5px solid var(--border-color)' : 'none',
                     cursor: 'pointer',
                     fontFamily: 'inherit',
                     textAlign: 'left',
-                    borderTop: i >= 2 ? '0.5px solid var(--border-color)' : 'none',
-                    borderLeft: isRightCol ? '0.5px solid var(--border-color)' : 'none',
-                    borderBottom: isLastRow ? 'none' : undefined,
-                    transition: 'background 0.12s',
                   }}
-                  onPointerDown={e => {
-                    (e.currentTarget as HTMLButtonElement).style.background = 'var(--page-bg)';
-                  }}
-                  onPointerUp={e => {
-                    (e.currentTarget as HTMLButtonElement).style.background = 'none';
-                  }}
-                  onPointerLeave={e => {
-                    (e.currentTarget as HTMLButtonElement).style.background = 'none';
-                  }}
+                  onPointerDown={e => { (e.currentTarget as HTMLElement).style.background = 'var(--page-bg)'; }}
+                  onPointerUp={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+                  onPointerLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
                 >
-                  {/* Icon circle */}
                   <div style={{
                     width: 44, height: 44, borderRadius: 14, flexShrink: 0,
                     background: svc.bg,
@@ -285,7 +277,6 @@ export default function SettingsPage() {
                   }}>
                     {svc.emoji}
                   </div>
-                  {/* Text */}
                   <div>
                     <div style={{
                       fontSize: 13, fontWeight: 700, color: 'var(--text-primary)',
@@ -293,17 +284,15 @@ export default function SettingsPage() {
                     }}>
                       {svc.label}
                     </div>
-                    <div style={{
-                      fontSize: 10, color: 'var(--text-muted)',
-                      marginTop: 2, fontWeight: 400,
-                    }}>
+                    <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>
                       {svc.sub}
                     </div>
                   </div>
                 </button>
-              );
-            })}
-          </div>
+              ))}
+            </div>
+          ))}
+          <div style={{ height: 4 }} />
         </Card>
 
         {/* ── 빠른 메뉴 ── */}
