@@ -9,44 +9,13 @@ import { useApp } from '@/contexts/AppContext';
 
 /* ── 서비스 메뉴 정의 ── */
 const SERVICES = [
-  {
-    emoji: '🍽️', label: '식사 추천', sub: '오늘 점심 뭐 먹지?',
-    href: '/swipe?mode=food',
-    bg: 'rgba(255,92,26,0.14)', fg: '#FF5C1A',
-  },
-  {
-    emoji: '☕', label: '카페 추천', sub: '커피 한잔 하러',
-    href: '/swipe?mode=cafe',
-    bg: 'rgba(108,60,20,0.14)', fg: '#8B5E3C',
-  },
-  {
-    emoji: '🍺', label: '안주 추천', sub: '오늘 한잔 할 때',
-    href: '/swipe?mode=food&focus=anju',
-    bg: 'rgba(230,160,0,0.14)', fg: '#B07800',
-  },
-  {
-    emoji: '🍰', label: '디저트 추천', sub: '달달한게 당길 때',
-    href: '/swipe?mode=cafe&focus=dessert',
-    bg: 'rgba(220,50,100,0.12)', fg: '#D03264',
-  },
-  {
-    emoji: '🍜', label: '라면 추천', sub: '국물 떙기는 날',
-    href: '/swipe?mode=food&focus=ramen',
-    bg: 'rgba(200,30,30,0.12)', fg: '#C02020',
-  },
-  {
-    emoji: '🍗', label: '치킨 추천', sub: '오늘은 치킨이지',
-    href: '/swipe?mode=food&focus=chicken',
-    bg: 'rgba(235,140,0,0.14)', fg: '#D08000',
-  },
-] as const;
-
-/* ── 빠른 메뉴 정의 ── */
-const QUICK_LINKS = [
-  { icon: 'ti-heart', label: '찜 목록', href: '/wishlist' },
-  { icon: 'ti-users', label: '그룹 매칭', href: '/matching' },
-  { icon: 'ti-diamond', label: 'Plus', href: '#', badge: 'NEW' },
-] as const;
+  { emoji: '🍽️', label: '식사 추천', sub: '오늘 점심 뭐 먹지?', href: '/swipe?mode=food',           bg: 'rgba(255,92,26,0.14)'  },
+  { emoji: '☕',  label: '카페 추천', sub: '커피 한잔 하러',      href: '/swipe?mode=cafe',           bg: 'rgba(108,60,20,0.14)'  },
+  { emoji: '🍺',  label: '안주 추천', sub: '오늘 한잔 할 때',     href: '/swipe?mode=food&focus=anju',    bg: 'rgba(230,160,0,0.14)'  },
+  { emoji: '🍰',  label: '디저트 추천', sub: '달달한게 당길 때', href: '/swipe?mode=cafe&focus=dessert', bg: 'rgba(220,50,100,0.12)' },
+  { emoji: '🍜',  label: '라면 추천', sub: '국물 떙기는 날',      href: '/swipe?mode=food&focus=ramen',   bg: 'rgba(200,30,30,0.12)'  },
+  { emoji: '🍗',  label: '치킨 추천', sub: '오늘은 치킨이지',     href: '/swipe?mode=food&focus=chicken', bg: 'rgba(235,140,0,0.14)'  },
+];
 
 /* ── SNS 아이콘 ── */
 function KakaoIcon() {
@@ -239,97 +208,51 @@ export default function SettingsPage() {
             <i className="ti ti-chevron-right" style={{ color: 'var(--text-muted)', fontSize: 14 }} />
           </div>
 
-          {/* 서비스 그리드 — CSS grid 2열 */}
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
-              borderTop: '0.5px solid var(--border-color)',
-            }}
-          >
-            {SERVICES.map((svc, i) => (
-              <button
-                key={svc.label}
-                onClick={() => router.push(svc.href)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 10,
-                  padding: '13px 14px',
-                  background: 'transparent',
-                  fontFamily: 'inherit',
-                  textAlign: 'left',
-                  cursor: 'pointer',
-                  borderTop: 'none',
-                  borderRight: 'none',
-                  borderBottom: i < SERVICES.length - 2 ? '0.5px solid var(--border-color)' : 'none',
-                  borderLeft: i % 2 === 1 ? '0.5px solid var(--border-color)' : 'none',
-                }}
-                onPointerDown={e => { (e.currentTarget as HTMLElement).style.background = 'var(--page-bg)'; }}
-                onPointerUp={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
-                onPointerLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
-              >
-                <div style={{
-                  width: 44, height: 44, borderRadius: 14, flexShrink: 0,
-                  background: svc.bg,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 22,
-                }}>
-                  {svc.emoji}
-                </div>
-                <div>
+          {/* 서비스 그리드 — 3행 하드코딩 */}
+          {([[0, 1], [2, 3], [4, 5]] as [number, number][]).map(([a, b], rowIdx) => (
+            <div
+              key={rowIdx}
+              style={{ display: 'flex', borderTop: '0.5px solid var(--border-color)' }}
+            >
+              {[SERVICES[a], SERVICES[b]].map((svc, colIdx) => (
+                <button
+                  key={svc.label}
+                  onClick={() => router.push(svc.href)}
+                  style={{
+                    flex: 1, display: 'flex', alignItems: 'center', gap: 10,
+                    padding: '14px', background: 'transparent',
+                    fontFamily: 'inherit', textAlign: 'left', cursor: 'pointer',
+                    borderTop: 'none', borderBottom: 'none', borderRight: 'none',
+                    borderLeft: colIdx === 1 ? '0.5px solid var(--border-color)' : 'none',
+                  }}
+                  onPointerDown={e => { (e.currentTarget as HTMLElement).style.background = 'var(--page-bg)'; }}
+                  onPointerUp={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+                  onPointerLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+                >
                   <div style={{
-                    fontSize: 13, fontWeight: 700, color: 'var(--text-primary)',
-                    letterSpacing: '-0.02em', lineHeight: 1.2,
+                    width: 46, height: 46, borderRadius: 14, flexShrink: 0,
+                    background: svc.bg,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 23,
                   }}>
-                    {svc.label}
+                    {svc.emoji}
                   </div>
-                  <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>
-                    {svc.sub}
+                  <div>
+                    <div style={{
+                      fontSize: 13, fontWeight: 700, color: 'var(--text-primary)',
+                      letterSpacing: '-0.02em', lineHeight: 1.2,
+                    }}>
+                      {svc.label}
+                    </div>
+                    <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>
+                      {svc.sub}
+                    </div>
                   </div>
-                </div>
-              </button>
-            ))}
-          </div>
-          <div style={{ height: 4 }} />
-        </Card>
-
-        {/* ── 빠른 메뉴 ── */}
-        <Card>
-          <div style={{ display: 'flex' }}>
-            {QUICK_LINKS.map((link, i) => (
-              <button
-                key={link.label}
-                onClick={() => router.push(link.href)}
-                style={{
-                  flex: 1,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 6,
-                  padding: '16px 8px',
-                  background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit',
-                  borderLeft: i > 0 ? '0.5px solid var(--border-color)' : 'none',
-                  position: 'relative',
-                }}
-              >
-                <i className={`ti ${link.icon}`} style={{ fontSize: 22, color: 'var(--text-secondary)' }} />
-                <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)', letterSpacing: '-0.01em' }}>
-                  {link.label}
-                </span>
-                {'badge' in link && link.badge && (
-                  <span style={{
-                    position: 'absolute', top: 12, right: 'calc(50% - 18px)',
-                    background: 'var(--accent)', color: '#fff',
-                    fontSize: 8, fontWeight: 700, padding: '1px 5px', borderRadius: 10,
-                  }}>
-                    {link.badge}
-                  </span>
-                )}
-              </button>
-            ))}
-          </div>
+                </button>
+              ))}
+            </div>
+          ))}
+          <div style={{ height: 6 }} />
         </Card>
 
         {/* ── 화면 설정 ── */}
@@ -413,7 +336,7 @@ export default function SettingsPage() {
           textAlign: 'center', padding: '4px 0 8px',
           fontSize: 11, color: 'var(--text-muted)', letterSpacing: '0.02em',
         }}>
-          FoodSwipe v3.0.0
+          FoodSwipe v1.1.5
         </div>
       </div>
 
