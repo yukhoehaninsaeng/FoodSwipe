@@ -517,7 +517,7 @@ export default function SettingsPage() {
             textAlign: 'center', padding: '4px 0 8px',
             fontSize: 11, color: 'var(--text-muted)', letterSpacing: '0.02em',
           }}>
-            FoodSwipe v1.2.0
+            FoodSwipe v1.2.1
           </div>
         </div>
       </div>

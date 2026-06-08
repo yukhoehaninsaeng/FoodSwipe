@@ -29,7 +29,7 @@ function nameParticle(name: string): string {
   return (code - 0xAC00) % 28 === 0 ? '야' : '아';
 }
 
-const TOTAL_STEPS = 4;
+const TOTAL_STEPS = 5;
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -43,15 +43,24 @@ export default function OnboardingPage() {
     if (step === 0) return nickname.trim().length > 0;
     if (step === 1) return cuisine.length > 0;
     if (step === 2) return true;
-    return dist !== '';
+    if (step === 3) return dist !== '';
+    return true;
   };
 
-  const handleNext = () => {
-    if (step < TOTAL_STEPS - 1) { setStep(s => s + 1); return; }
+  const saveAndNavigate = () => {
     localStorage.setItem('fs-onboarding-done', 'true');
     localStorage.setItem('fs-nickname', nickname.trim());
     localStorage.setItem('fs-taste', JSON.stringify({ cuisine, budget, dist }));
     router.replace('/swipe');
+  };
+
+  const handleNext = () => {
+    if (step < TOTAL_STEPS - 1) { setStep(s => s + 1); return; }
+    navigator.geolocation.getCurrentPosition(
+      () => saveAndNavigate(),
+      () => saveAndNavigate(),
+      { timeout: 5000 },
+    );
   };
 
   const toggleCuisine = (key: string) => {
@@ -207,14 +216,41 @@ export default function OnboardingPage() {
         </div>
       )}
 
+      {/* Step 4: 위치 허용 */}
+      {step === 4 && (
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
+          <div style={{ fontSize: 72, marginBottom: 24 }}>📍</div>
+          <h2 style={{ fontSize: 26, fontWeight: 700, letterSpacing: '-0.03em', marginBottom: 12 }}>
+            내 주변 맛집을<br />찾아볼게요
+          </h2>
+          <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)', lineHeight: 1.6, maxWidth: 260 }}>
+            위치 정보를 허용하면 지금 있는 곳에서<br />
+            가까운 맛집을 먼저 추천해 드려요
+          </p>
+        </div>
+      )}
+
       <button
         className="cta-btn"
         disabled={!canNext()}
         onClick={handleNext}
         style={{ marginTop: 24 }}
       >
-        {step < TOTAL_STEPS - 1 ? '다음' : '시작하기'}
+        {step === TOTAL_STEPS - 1 ? '위치 허용하기' : '다음'}
       </button>
+
+      {step === TOTAL_STEPS - 1 && (
+        <button
+          onClick={saveAndNavigate}
+          style={{
+            background: 'none', border: 'none', color: 'rgba(255,255,255,0.35)',
+            fontSize: 13, marginTop: 14, cursor: 'pointer', textDecoration: 'underline',
+            fontFamily: 'inherit',
+          }}
+        >
+          나중에 시작하기
+        </button>
+      )}
     </div>
   );
 }
