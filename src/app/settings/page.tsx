@@ -94,15 +94,10 @@ export default function SettingsPage() {
         </button>
       </div>
 
-      {/* ── 스크롤 영역 ── */}
-      <div style={{
-        flex: 1,
-        overflowY: 'auto',
-        padding: '4px 14px 24px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 12,
-      }}>
+      {/* ── 스크롤 뷰포트 — flex:1+overflow:auto만, display:flex 금지 ── */}
+      <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
+      {/* ── 스크롤 컨텐츠 — 이 div가 자유롭게 늘어나야 카드가 짤리지 않음 ── */}
+      <div style={{ padding: '4px 14px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
 
         {/* ── 프로필 카드 ── */}
         <Card>
@@ -338,7 +333,8 @@ export default function SettingsPage() {
         }}>
           FoodSwipe v1.1.5
         </div>
-      </div>
+      </div>{/* /스크롤 컨텐츠 */}
+      </div>{/* /스크롤 뷰포트 */}
 
       <TabBar />
     </div>
