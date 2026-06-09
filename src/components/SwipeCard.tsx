@@ -286,58 +286,84 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
                 </div>
               )}
 
-              {/* Menus */}
-              {(() => {
-                const menus = restaurant.menus ?? extraInfo?.menus ?? null;
-                if (extraLoading) {
-                  return (
-                    <div className="card-back-section" style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-muted)', fontSize: 12 }}>
-                      <div style={{
-                        width: 14, height: 14, borderRadius: '50%',
-                        border: '2px solid var(--border-color)',
-                        borderTopColor: 'var(--accent)',
-                        animation: 'spin 0.7s linear infinite',
-                        flexShrink: 0,
-                      }} />
-                      메뉴 불러오는 중...
+              {/* 1. 주소 */}
+              {restaurant.address && (
+                <div className="card-back-section">
+                  <div className="card-back-section-title">주소</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                    {restaurant.address}
+                  </div>
+                </div>
+              )}
+
+              {/* 2. 메뉴 */}
+              <div className="card-back-section">
+                <div className="card-back-section-title">
+                  메뉴
+                  {extraLoading && (
+                    <div style={{
+                      display: 'inline-block', marginLeft: 8,
+                      width: 10, height: 10, borderRadius: '50%',
+                      border: '2px solid var(--border-color)',
+                      borderTopColor: 'var(--accent)',
+                      animation: 'spin 0.7s linear infinite',
+                      verticalAlign: 'middle',
+                    }} />
+                  )}
+                </div>
+
+                {/* 2-1. 메뉴 항목 */}
+                {(() => {
+                  const menus = restaurant.menus ?? extraInfo?.menus ?? null;
+                  if (!menus || menus.length === 0) return null;
+                  return menus.map((item, i) => (
+                    <div key={i} className="card-back-menu-item">
+                      <span className="card-back-menu-emoji">{item.e}</span>
+                      <div className="card-back-menu-info">
+                        <span className="card-back-menu-name">{item.n}</span>
+                        {item.d && <span className="card-back-menu-desc">{item.d}</span>}
+                      </div>
+                      {item.p && <span className="card-back-menu-price">{item.p}</span>}
                     </div>
-                  );
-                }
-                if (menus && menus.length > 0) {
-                  return (
-                    <div className="card-back-section">
-                      <div className="card-back-section-title">메뉴</div>
-                      {menus.map((item, i) => (
-                        <div key={i} className="card-back-menu-item">
-                          <span className="card-back-menu-emoji">{item.e}</span>
-                          <div className="card-back-menu-info">
-                            <span className="card-back-menu-name">{item.n}</span>
-                            {item.d && <span className="card-back-menu-desc">{item.d}</span>}
-                          </div>
-                          {item.p && <span className="card-back-menu-price">{item.p}</span>}
-                        </div>
-                      ))}
-                    </div>
-                  );
-                }
-                if (extraInfo !== null && !menus && restaurant.placeUrl) {
-                  return (
-                    <div className="card-back-section" style={{ borderBottom: 'none' }}>
-                      <div className="card-back-section-title">메뉴</div>
-                      <a
-                        href={restaurant.placeUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{ fontSize: 12, color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: 4 }}
-                      >
-                        <i className="ti ti-external-link" style={{ fontSize: 12 }} />
-                        카카오맵에서 메뉴 보기
-                      </a>
-                    </div>
-                  );
-                }
-                return null;
-              })()}
+                  ));
+                })()}
+
+                {/* 2-2. 카카오맵에서 메뉴보기 */}
+                <a
+                  href={restaurant.placeUrl ?? `https://place.map.kakao.com/${restaurant.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 6,
+                    fontSize: 12, fontWeight: 600,
+                    color: '#1A1300',
+                    background: '#FFDA00',
+                    padding: '8px 12px', borderRadius: 10, marginTop: 10,
+                    textDecoration: 'none',
+                  }}
+                >
+                  <i className="ti ti-map-2" style={{ fontSize: 13 }} />
+                  카카오맵에서 메뉴보기
+                </a>
+
+                {/* 2-3. 네이버맵에서 메뉴보기 */}
+                <a
+                  href={`https://map.naver.com/p/search/${encodeURIComponent(restaurant.name + (restaurant.address ? ' ' + restaurant.address : ''))}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 6,
+                    fontSize: 12, fontWeight: 600,
+                    color: '#fff',
+                    background: '#03C75A',
+                    padding: '8px 12px', borderRadius: 10, marginTop: 8,
+                    textDecoration: 'none',
+                  }}
+                >
+                  <i className="ti ti-map-2" style={{ fontSize: 13 }} />
+                  네이버맵에서 메뉴보기
+                </a>
+              </div>
 
               {/* Hours */}
               {(() => {
@@ -366,24 +392,14 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
                 );
               })()}
 
-              {/* Address */}
-              {restaurant.address && (
-                <div className="card-back-section" style={{ borderBottom: 'none' }}>
-                  <div className="card-back-section-title">주소</div>
-                  <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                    {restaurant.address}
-                  </div>
-                </div>
-              )}
-
-              {/* Map buttons */}
+              {/* Map navigation buttons */}
               <div className="card-back-map-btns">
                 <button
                   className="card-back-map-btn"
                   style={{ background: '#FFDA00', color: '#1A1300' }}
                   onClick={() => openKakaoMap(restaurant.name, restaurant.address)}
                 >
-                  <i className="ti ti-map-2" />
+                  <i className="ti ti-navigation" />
                   카카오맵
                 </button>
                 <button
