@@ -325,8 +325,11 @@ export const FALLBACK_IMAGES: Record<string, string> = {
   '한식': 'https://images.unsplash.com/photo-1617195737496-bc30194e3a19?w=600&h=800&q=80&auto=format&fit=crop',
   '일식': 'https://images.unsplash.com/photo-1553621042-f6e147245754?w=600&h=800&q=80&auto=format&fit=crop',
   '양식': 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=600&h=800&q=80&auto=format&fit=crop',
+  '중식': 'https://images.unsplash.com/photo-1563245372-f21724e3856d?w=600&h=800&q=80&auto=format&fit=crop',
   '카페': 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600&h=800&q=80&auto=format&fit=crop',
   '분식': 'https://images.unsplash.com/photo-1542010589005-d1eacc3918f2?w=600&h=800&q=80&auto=format&fit=crop',
   '치킨': 'https://images.unsplash.com/photo-1569565782892-1bdcf1b0b9c6?w=600&h=800&q=80&auto=format&fit=crop',
+  '해산물': 'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=600&h=800&q=80&auto=format&fit=crop',
   '디저트': 'https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=600&h=800&q=80&auto=format&fit=crop',
+  '음식점': 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&h=800&q=80&auto=format&fit=crop',
 };

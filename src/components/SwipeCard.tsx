@@ -1,12 +1,7 @@
 'use client';
 
-import { useState, useRef, useCallback, useEffect, CSSProperties } from 'react';
-import { Restaurant, FALLBACK_IMAGES, MenuItem, BusinessHours } from '@/data/restaurants';
-
-interface ExtraInfo {
-  menus: MenuItem[] | null;
-  hours: BusinessHours | null;
-}
+import { useState, useRef, useCallback, CSSProperties } from 'react';
+import { Restaurant, FALLBACK_IMAGES } from '@/data/restaurants';
 
 interface SwipeCardProps {
   restaurant: Restaurant;
@@ -37,27 +32,10 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
   const isDraggingRef = useRef(false);
   const [flyDir, setFlyDir] = useState<'left' | 'right' | 'up' | null>(null);
   const [flipped, setFlipped] = useState(false);
-  const [extraInfo, setExtraInfo] = useState<ExtraInfo | null>(null);
-  const [extraLoading, setExtraLoading] = useState(false);
   const startRef = useRef({ x: 0, y: 0 });
   const isDraggedRef = useRef(false);
   const velocityRef = useRef({ vx: 0, vy: 0, prevX: 0, prevY: 0, time: 0 });
   const isTop = stackIndex === 0;
-
-  // Prefetch place detail as soon as this card becomes the top card
-  useEffect(() => {
-    if (!isTop) return;
-    if (restaurant.menus && restaurant.menus.length > 0) return;
-    if (extraInfo !== null) return;
-    if (!/^\d+$/.test(restaurant.id)) return; // mock data, skip
-    setExtraLoading(true);
-    fetch(`/api/place?id=${restaurant.id}`)
-      .then(r => r.json())
-      .then((d: ExtraInfo) => setExtraInfo(d))
-      .catch(() => setExtraInfo({ menus: null, hours: null }))
-      .finally(() => setExtraLoading(false));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isTop]);
 
   // Convenience aliases for render
   const dragX = dragPos.x;
@@ -298,35 +276,19 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
 
               {/* 2. 메뉴 */}
               <div className="card-back-section">
-                <div className="card-back-section-title">
-                  메뉴
-                  {extraLoading && (
-                    <div style={{
-                      display: 'inline-block', marginLeft: 8,
-                      width: 10, height: 10, borderRadius: '50%',
-                      border: '2px solid var(--border-color)',
-                      borderTopColor: 'var(--accent)',
-                      animation: 'spin 0.7s linear infinite',
-                      verticalAlign: 'middle',
-                    }} />
-                  )}
-                </div>
+                <div className="card-back-section-title">메뉴</div>
 
-                {/* 2-1. 메뉴 항목 */}
-                {(() => {
-                  const menus = restaurant.menus ?? extraInfo?.menus ?? null;
-                  if (!menus || menus.length === 0) return null;
-                  return menus.map((item, i) => (
-                    <div key={i} className="card-back-menu-item">
-                      <span className="card-back-menu-emoji">{item.e}</span>
-                      <div className="card-back-menu-info">
-                        <span className="card-back-menu-name">{item.n}</span>
-                        {item.d && <span className="card-back-menu-desc">{item.d}</span>}
-                      </div>
-                      {item.p && <span className="card-back-menu-price">{item.p}</span>}
+                {/* 2-1. 메뉴 항목 (목업 데이터에만 존재) */}
+                {restaurant.menus && restaurant.menus.length > 0 && restaurant.menus.map((item, i) => (
+                  <div key={i} className="card-back-menu-item">
+                    <span className="card-back-menu-emoji">{item.e}</span>
+                    <div className="card-back-menu-info">
+                      <span className="card-back-menu-name">{item.n}</span>
+                      {item.d && <span className="card-back-menu-desc">{item.d}</span>}
                     </div>
-                  ));
-                })()}
+                    {item.p && <span className="card-back-menu-price">{item.p}</span>}
+                  </div>
+                ))}
 
                 {/* 2-2. 카카오맵에서 메뉴보기 */}
                 <a
@@ -336,9 +298,9 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
                   style={{
                     display: 'flex', alignItems: 'center', gap: 6,
                     fontSize: 12, fontWeight: 600,
-                    color: '#1A1300',
-                    background: '#FFDA00',
-                    padding: '8px 12px', borderRadius: 10, marginTop: 10,
+                    color: '#1A1300', background: '#FFDA00',
+                    padding: '8px 12px', borderRadius: 10,
+                    marginTop: restaurant.menus?.length ? 10 : 0,
                     textDecoration: 'none',
                   }}
                 >
@@ -354,8 +316,7 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
                   style={{
                     display: 'flex', alignItems: 'center', gap: 6,
                     fontSize: 12, fontWeight: 600,
-                    color: '#fff',
-                    background: '#03C75A',
+                    color: '#fff', background: '#03C75A',
                     padding: '8px 12px', borderRadius: 10, marginTop: 8,
                     textDecoration: 'none',
                   }}
@@ -366,9 +327,8 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
               </div>
 
               {/* Hours */}
-              {(() => {
-                const hours = restaurant.hours ?? extraInfo?.hours ?? null;
-                if (!hours) return null;
+              {restaurant.hours && (() => {
+                const hours = restaurant.hours;
                 return (
                   <div className="card-back-section">
                     <div className="card-back-section-title">영업시간</div>
@@ -390,7 +350,7 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
                     )}
                   </div>
                 );
-              })()}
+              })() }
 
               {/* Map navigation buttons */}
               <div className="card-back-map-btns">
