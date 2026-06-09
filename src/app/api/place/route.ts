@@ -40,6 +40,31 @@ async function fetchJson(id: string): Promise<Record<string, unknown> | null> {
   return null;
 }
 
+// Fetch dedicated photo list API
+async function fetchPhotoList(id: string): Promise<string[]> {
+  try {
+    const res = await fetch(
+      `https://place.map.kakao.com/photo/v/${id}?service=1&page=1&size=10`,
+      {
+        headers: browserHeaders('application/json, text/plain, */*'),
+        next: { revalidate: 3600 },
+      },
+    );
+    if (!res.ok) return [];
+    const ct = res.headers.get('content-type') ?? '';
+    if (!ct.includes('json')) return [];
+    const data = await res.json();
+    const list: Array<{ orgurl?: string; url?: string }> =
+      data?.photoList ?? data?.data?.photoList ?? [];
+    return list
+      .map((p) => p.orgurl ?? p.url ?? '')
+      .filter(Boolean)
+      .slice(0, 8) as string[];
+  } catch {
+    return [];
+  }
+}
+
 // Fetch HTML page and extract all photo URLs
 async function fetchHtmlPhotos(id: string): Promise<string[]> {
   try {
@@ -85,30 +110,35 @@ export async function GET(req: NextRequest) {
   if (!id) return NextResponse.json({ menus: null, hours: null, photos: [] });
 
   try {
-    // Run JSON API + HTML scrape in parallel
-    const [data, htmlPhotos] = await Promise.all([fetchJson(id), fetchHtmlPhotos(id)]);
+    // Run JSON API + photo list API + HTML scrape in parallel
+    const [data, photoListUrls, htmlPhotos] = await Promise.all([
+      fetchJson(id),
+      fetchPhotoList(id),
+      fetchHtmlPhotos(id),
+    ]);
 
-    // Build photos array: JSON API photos first, then HTML-scraped ones
+    // Build photos array: JSON API → photo list API → HTML-scraped (de-duped, max 6)
     const photos: string[] = [];
+
+    const addPhoto = (url: string) => {
+      if (url && !photos.includes(url) && photos.length < 6) photos.push(url);
+    };
 
     if (data) {
       const basic = data.basicInfo as Record<string, unknown> | undefined;
       const mainPhoto = basic?.mainphotourl as string | undefined;
-      if (mainPhoto) photos.push(mainPhoto);
+      if (mainPhoto) addPhoto(mainPhoto);
 
       const photoList =
         (data.photo as { photoList?: Array<{ orgurl?: string }> } | undefined)
           ?.photoList ?? [];
       for (const p of photoList) {
-        if (p.orgurl && !photos.includes(p.orgurl) && photos.length < 6)
-          photos.push(p.orgurl);
+        if (p.orgurl) addPhoto(p.orgurl);
       }
     }
 
-    // Merge HTML photos (de-duped)
-    for (const url of htmlPhotos) {
-      if (!photos.includes(url) && photos.length < 6) photos.push(url);
-    }
+    for (const url of photoListUrls) addPhoto(url);
+    for (const url of htmlPhotos) addPhoto(url);
 
     if (!data) {
       return NextResponse.json({ menus: null, hours: null, photos });

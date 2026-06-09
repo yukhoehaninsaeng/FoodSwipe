@@ -48,17 +48,14 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
   // Prefetch place detail via server proxy + test extra CDN photo paths client-side
   useEffect(() => {
     if (!isTop || extraInfo !== null || !restaurant.id || !/^\d+$/.test(restaurant.id)) return;
-    if (restaurant.menus && restaurant.menus.length > 0) return;
+    // Note: do NOT skip when restaurant has mock menus — we still need real photos
 
-    const isKakaoId = /^\d+$/.test(restaurant.id);
-
-    // Test a CDN path: image requests have no CORS restriction
     const testCdn = (path: string): Promise<string | null> =>
       new Promise(resolve => {
         if (typeof window === 'undefined') { resolve(null); return; }
         const img = new window.Image();
         const url = `https://t1.kakaocdn.net/thumb/C900x1350.q90/?fname=https://t1.kakaocdn.net/shop/info/v2/${restaurant.id}/${path}`;
-        const timer = setTimeout(() => { img.src = ''; resolve(null); }, 4000);
+        const timer = setTimeout(() => { img.src = ''; resolve(null); }, 3000);
         img.onload = () => { clearTimeout(timer); resolve(url); };
         img.onerror = () => { clearTimeout(timer); resolve(null); };
         img.src = url;
@@ -68,20 +65,24 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
       .then(r => (r.ok ? r.json() : null))
       .catch(() => null);
 
-    // Speculatively test extra CDN photo paths while waiting for API
-    const cdnTests = isKakaoId
-      ? [testCdn('photo/1'), testCdn('photo/2'), testCdn('1'), testCdn('2')]
-      : [];
+    // Test photo/1~8 in parallel (Image() requests bypass CORS)
+    const cdnTests = [
+      testCdn('photo/1'), testCdn('photo/2'), testCdn('photo/3'),
+      testCdn('photo/4'), testCdn('photo/5'), testCdn('photo/6'),
+      testCdn('photo/7'), testCdn('photo/8'),
+    ];
 
     Promise.all([apiCall, ...cdnTests]).then(([apiData, ...cdnResults]) => {
       const extraCdn = (cdnResults as (string | null)[]).filter(Boolean) as string[];
       const apiPhotos: string[] = apiData?.photos ?? [];
 
-      // Merge: API photos first, then CDN extras (de-duped)
+      // Merge: API photos first, then CDN extras (de-duped, max 6)
       const merged = [...apiPhotos];
       for (const url of extraCdn) {
-        if (!merged.includes(url)) merged.push(url);
+        if (!merged.includes(url) && merged.length < 6) merged.push(url);
       }
+      // Always ensure the thumbnail is in the list
+      if (merged.length === 0) merged.push(restaurant.imageUrl);
 
       setExtraInfo({
         menus: apiData?.menus ?? null,
@@ -264,19 +265,31 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
               <div className="card-vignette-top" />
               <div className="card-vignette-bottom" />
 
-              {/* Photo progress bar (Instagram stories style) */}
+              {/* Photo progress bar + count badge */}
               {allPhotos.length > 1 && (
-                <div className="photo-progress-bar">
-                  {allPhotos.slice(0, 6).map((_, i) => (
-                    <div
-                      key={i}
-                      className={`photo-progress-segment${i === photoIdx ? ' active' : i < photoIdx ? ' done' : ''}`}
-                    />
-                  ))}
-                </div>
+                <>
+                  <div className="photo-progress-bar">
+                    {allPhotos.slice(0, 6).map((_, i) => (
+                      <div
+                        key={i}
+                        className={`photo-progress-segment${i === clampedIdx ? ' active' : i < clampedIdx ? ' done' : ''}`}
+                      />
+                    ))}
+                  </div>
+                  <div style={{
+                    position: 'absolute', top: 22, right: 10,
+                    background: 'rgba(0,0,0,0.40)',
+                    borderRadius: 10, padding: '2px 7px',
+                    fontSize: 10, fontWeight: 700,
+                    color: 'rgba(255,255,255,0.90)',
+                    pointerEvents: 'none', zIndex: 4,
+                  }}>
+                    {clampedIdx + 1} / {Math.min(allPhotos.length, 6)}
+                  </div>
+                </>
               )}
 
-              {/* Transparent tap zones: left 30% = prev, right 30% = next, center = flip */}
+              {/* Tap zones (full height L/R 30%) + visible arrow buttons */}
               {allPhotos.length > 1 && (
                 <>
                   <button
@@ -297,6 +310,34 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
                     }}
                     aria-label="다음 사진"
                   />
+
+                  {/* Visible arrow indicators */}
+                  {clampedIdx > 0 && (
+                    <span style={{
+                      position: 'absolute', left: 8, top: '50%',
+                      transform: 'translateY(-50%)',
+                      width: 28, height: 28, borderRadius: '50%',
+                      background: 'rgba(0,0,0,0.38)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      color: 'rgba(255,255,255,0.92)', fontSize: 15,
+                      pointerEvents: 'none', zIndex: 4,
+                    }}>
+                      <i className="ti ti-chevron-left" />
+                    </span>
+                  )}
+                  {clampedIdx < allPhotos.length - 1 && (
+                    <span style={{
+                      position: 'absolute', right: 8, top: '50%',
+                      transform: 'translateY(-50%)',
+                      width: 28, height: 28, borderRadius: '50%',
+                      background: 'rgba(0,0,0,0.38)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      color: 'rgba(255,255,255,0.92)', fontSize: 15,
+                      pointerEvents: 'none', zIndex: 4,
+                    }}>
+                      <i className="ti ti-chevron-right" />
+                    </span>
+                  )}
                 </>
               )}
 
