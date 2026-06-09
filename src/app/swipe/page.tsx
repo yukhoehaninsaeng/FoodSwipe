@@ -83,8 +83,8 @@ function Toast({ msg, visible }: { msg: string; visible: boolean }) {
         transform: `translateX(-50%) translateY(${visible ? 0 : -6}px)`,
         opacity: visible ? 1 : 0,
         transition: 'all 0.25s cubic-bezier(0.34,1.56,0.64,1)',
-        background: 'var(--text-primary)',
-        color: 'var(--bg)',
+        background: 'var(--toast-bg)',
+        color: 'var(--toast-color)',
         padding: '7px 16px',
         borderRadius: 20,
         fontSize: 12,
@@ -93,6 +93,8 @@ function Toast({ msg, visible }: { msg: string; visible: boolean }) {
         pointerEvents: 'none',
         zIndex: 100,
         letterSpacing: '-0.01em',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
       }}
     >
       {msg}
@@ -640,9 +642,22 @@ function SwipePageInner() {
               transform: modeAnim ? 'scale(0.82) rotate(18deg)' : 'scale(1) rotate(0deg)',
               transition: 'transform 0.32s cubic-bezier(0.34,1.56,0.64,1)',
               flexShrink: 0,
+              position: 'relative',
             }}
           >
             {mode === 'food' ? '🍽️' : '☕'}
+            <span style={{
+              position: 'absolute', bottom: 1, right: 1,
+              width: 16, height: 16, borderRadius: '50%',
+              background: mode === 'food' ? '#FFDA00' : '#1EBF5C',
+              color: mode === 'food' ? '#1A1300' : '#fff',
+              fontSize: 8, fontWeight: 800,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              lineHeight: 1, pointerEvents: 'none',
+              boxShadow: '0 0 0 1.5px var(--bg)',
+            }}>
+              {mode === 'food' ? '식' : '카'}
+            </span>
           </button>
 
           <button
@@ -661,44 +676,82 @@ function SwipePageInner() {
       </div>
 
       {/* ── Distance bar ── */}
-      <div style={{ padding: '0 14px 8px', flexShrink: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div
-            className="dist-filter-bar"
-            style={{ '--pct': `${(filters.maxDistanceKm / 10) * 100}%` } as CSSProperties}
-          >
-            <div className="dist-filter-fill" />
-            <input
-              type="range" min="0.5" max="10" step="0.5"
-              value={filters.maxDistanceKm}
-              onChange={e => handleFilterChange({ ...filters, maxDistanceKm: parseFloat(e.target.value) })}
-              className="dist-filter-input"
-              aria-label="최대 거리"
-            />
-          </div>
-          <span style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 600, flexShrink: 0, minWidth: 30, textAlign: 'right' }}>
-            {filters.maxDistanceKm < 1 ? `${filters.maxDistanceKm * 1000}m` : `${filters.maxDistanceKm}km`}
-          </span>
-          <button
-            onClick={() => handleFilterChange({ ...filters, openNow: !filters.openNow })}
-            style={{
-              padding: '4px 10px', borderRadius: 12, cursor: 'pointer', fontFamily: 'inherit',
-              fontSize: 10, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4,
-              flexShrink: 0, transition: 'all 0.15s',
-              border: filters.openNow ? '0.5px solid var(--accent)' : '0.5px solid var(--border-color)',
-              background: filters.openNow ? 'rgba(255,92,26,0.08)' : 'var(--surface)',
-              color: filters.openNow ? 'var(--accent)' : 'var(--text-muted)',
-            }}
-          >
-            <span style={{
-              width: 5, height: 5, borderRadius: '50%',
-              background: filters.openNow ? '#32D264' : 'var(--text-muted)',
-              flexShrink: 0,
-            }} />
-            영업중
-          </button>
+      <div style={{
+        padding: '0 14px',
+        flexShrink: 0,
+        height: 38,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+        background: 'var(--filterbar-bg)',
+      }}>
+        <span style={{ fontSize: 14, flexShrink: 0 }}>📍</span>
+        <div
+          className="dist-filter-bar"
+          style={{ '--pct': `${(filters.maxDistanceKm / 10) * 100}%` } as CSSProperties}
+        >
+          <div className="dist-filter-fill" />
+          <input
+            type="range" min="0.5" max="10" step="0.5"
+            value={filters.maxDistanceKm}
+            onChange={e => handleFilterChange({ ...filters, maxDistanceKm: parseFloat(e.target.value) })}
+            className="dist-filter-input"
+            aria-label="최대 거리"
+          />
         </div>
+        <span style={{
+          fontSize: 10, color: 'var(--accent)', fontWeight: 700,
+          flexShrink: 0, minWidth: 34, textAlign: 'center',
+          background: 'rgba(255,92,26,0.10)',
+          padding: '2px 6px', borderRadius: 8,
+        }}>
+          {filters.maxDistanceKm < 1 ? `${filters.maxDistanceKm * 1000}m` : `${filters.maxDistanceKm}km`}
+        </span>
+        <button
+          onClick={() => handleFilterChange({ ...filters, openNow: !filters.openNow })}
+          style={{
+            padding: '4px 9px', borderRadius: 12, cursor: 'pointer', fontFamily: 'inherit',
+            fontSize: 10, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4,
+            flexShrink: 0, transition: 'all 0.15s',
+            border: filters.openNow ? '0.5px solid var(--accent)' : '0.5px solid var(--border-color)',
+            background: filters.openNow ? 'rgba(255,92,26,0.08)' : 'transparent',
+            color: filters.openNow ? 'var(--accent)' : 'var(--text-muted)',
+          }}
+        >
+          <span style={{
+            width: 5, height: 5, borderRadius: '50%',
+            background: filters.openNow ? '#32D264' : 'var(--text-muted)',
+            flexShrink: 0,
+          }} />
+          영업중
+        </button>
       </div>
+
+      {/* ── Active filter pills ── */}
+      {(filters.minRating > 0 || filters.excludeCuisines.length > 0) && (
+        <div className="filter-pills-bar">
+          {filters.minRating > 0 && (
+            <button
+              className="filter-pill"
+              onClick={() => handleFilterChange({ ...filters, minRating: 0 })}
+            >
+              ⭐ {filters.minRating}+ ✕
+            </button>
+          )}
+          {filters.excludeCuisines.map(c => (
+            <button
+              key={c}
+              className="filter-pill"
+              onClick={() => handleFilterChange({
+                ...filters,
+                excludeCuisines: filters.excludeCuisines.filter(x => x !== c),
+              })}
+            >
+              {c} 제외 ✕
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* ── Card Stack ── */}
       <div className="card-stack">
@@ -779,7 +832,7 @@ function SwipePageInner() {
                   width: i === 0 ? 18 : 5,
                   height: 4,
                   borderRadius: 2,
-                  background: i === 0 ? 'var(--accent)' : 'var(--border-color)',
+                  background: i === 0 ? 'var(--accent)' : 'var(--indicator-dot)',
                   transition: 'all 0.3s',
                 }}
               />
@@ -796,15 +849,11 @@ function SwipePageInner() {
 
           <div className="action-area">
             <button
-              className="action-btn"
+              className="action-btn btn-back"
               aria-label="되돌리기"
               onClick={handleUndo}
               disabled={history.length === 0}
-              style={{
-                width: 40, height: 40, fontSize: 17,
-                opacity: history.length > 0 ? 1 : 0.25,
-                color: 'var(--text-secondary)',
-              }}
+              style={{ opacity: history.length > 0 ? 1 : 0.25 }}
             >
               <i className="ti ti-arrow-back-up" aria-hidden="true" />
             </button>

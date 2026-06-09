@@ -19,6 +19,32 @@
   --like: rgba(30, 160, 80, 0.55);
   --nope: rgba(200, 50, 50, 0.55);
   --super: rgba(180, 100, 0, 0.55);
+  /* v3 button tokens */
+  --btn-x-bg: rgba(0, 0, 0, 0.04);
+  --btn-x-color: #E03020;
+  --btn-x-border: rgba(0, 0, 0, 0.07);
+  --btn-h-bg: rgba(255, 255, 255, 0.95);
+  --btn-h-color: #FF5C1A;
+  --btn-back-bg: rgba(0, 0, 0, 0.04);
+  --btn-back-color: rgba(0, 0, 0, 0.40);
+  /* v3 indicator */
+  --indicator-dot: rgba(0, 0, 0, 0.10);
+  /* v3 photo bar */
+  --photo-bar-off: rgba(255, 255, 255, 0.30);
+  --photo-bar-on: rgba(255, 255, 255, 0.90);
+  /* v3 card tags */
+  --tag-bg: rgba(0, 0, 0, 0.28);
+  --tag-border: rgba(255, 255, 255, 0.12);
+  --tag-color: rgba(255, 255, 255, 0.88);
+  /* v3 filter pills */
+  --pill-bg: rgba(255, 92, 26, 0.08);
+  --pill-border: rgba(255, 92, 26, 0.25);
+  --pill-color: #FF5C1A;
+  /* v3 bars */
+  --filterbar-bg: rgba(0, 0, 0, 0.03);
+  /* v3 toast */
+  --toast-bg: rgba(40, 20, 8, 0.85);
+  --toast-color: #ffffff;
 }
 
 [data-theme="dark"] {
@@ -39,6 +65,17 @@
   --like: rgba(50, 210, 100, 0.65);
   --nope: rgba(255, 80, 80, 0.65);
   --super: rgba(255, 160, 20, 0.65);
+  --btn-x-bg: rgba(255, 255, 255, 0.06);
+  --btn-x-color: #FF5050;
+  --btn-x-border: rgba(255, 255, 255, 0.08);
+  --btn-h-bg: rgba(255, 255, 255, 0.06);
+  --btn-h-color: #1EBF5C;
+  --btn-back-bg: rgba(255, 255, 255, 0.06);
+  --btn-back-color: rgba(255, 255, 255, 0.50);
+  --indicator-dot: rgba(255, 255, 255, 0.12);
+  --filterbar-bg: rgba(255, 255, 255, 0.04);
+  --toast-bg: rgba(20, 10, 4, 0.90);
+  --toast-color: #ffffff;
 }
 
 /* ─── Base ─── */
@@ -175,13 +212,13 @@ html, body {
 .card-category-tag {
   display: inline-block;
   padding: 3px 8px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 0.5px solid rgba(255, 255, 255, 0.2);
+  background: var(--tag-bg);
+  border: 0.5px solid var(--tag-border);
   border-radius: 6px;
   font-size: 10px;
   font-weight: 500;
   letter-spacing: 0.04em;
-  color: rgba(255,255,255,0.85);
+  color: var(--tag-color);
   margin-bottom: 6px;
 }
 
@@ -189,7 +226,7 @@ html, body {
   font-size: 24px;
   font-weight: 700;
   letter-spacing: -0.05em;
-  color: #ffffff;
+  color: var(--text-primary);
   line-height: 1.1;
   margin-bottom: 6px;
 }
@@ -292,8 +329,30 @@ html, body {
 }
 
 .action-btn:active { transform: scale(0.88); }
-.action-btn.btn-nope { width: 56px; height: 56px; color: var(--nope); }
-.action-btn.btn-like { width: 56px; height: 56px; color: var(--like); }
+
+.action-btn.btn-nope {
+  width: 52px; height: 52px;
+  background: var(--btn-x-bg);
+  color: var(--btn-x-color);
+  border-color: var(--btn-x-border);
+  font-size: 22px;
+}
+
+.action-btn.btn-like {
+  width: 52px; height: 52px;
+  background: var(--btn-h-bg);
+  color: var(--btn-h-color);
+  border-color: var(--btn-x-border);
+  font-size: 22px;
+}
+
+.action-btn.btn-back {
+  width: 40px; height: 40px;
+  background: var(--btn-back-bg);
+  color: var(--btn-back-color);
+  border-color: var(--btn-x-border);
+  font-size: 17px;
+}
 
 /* ─── Onboarding ─── */
 .onboarding-root {
@@ -931,13 +990,13 @@ html, body {
   flex: 1;
   height: 2.5px;
   border-radius: 2px;
-  background: rgba(255, 255, 255, 0.30);
+  background: var(--photo-bar-off);
   transition: background 0.2s;
 }
 
 .photo-progress-segment.active,
 .photo-progress-segment.done {
-  background: rgba(255, 255, 255, 0.90);
+  background: var(--photo-bar-on);
 }
 
 .photo-nav-btn {
@@ -955,6 +1014,33 @@ html, body {
 
 .photo-nav-prev { left: 0; }
 .photo-nav-next { right: 0; }
+
+/* ─── Filter pills bar ─── */
+.filter-pills-bar {
+  display: flex;
+  gap: 6px;
+  padding: 0 14px 8px;
+  overflow-x: auto;
+  flex-shrink: 0;
+}
+.filter-pills-bar::-webkit-scrollbar { display: none; }
+
+.filter-pill {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: var(--pill-bg);
+  border: 0.5px solid var(--pill-border);
+  color: var(--pill-color);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.15s;
+}
 
 /* ─── Distance filter bar ─── */
 .dist-filter-bar {
