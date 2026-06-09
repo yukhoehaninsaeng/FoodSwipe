@@ -44,56 +44,20 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
   const velocityRef = useRef({ vx: 0, vy: 0, prevX: 0, prevY: 0, time: 0 });
   const isTop = stackIndex === 0;
 
-  // Client-side fetch: browser has Kakao session cookies, bypasses server-side block
+  // Prefetch place detail via server-side proxy (avoids CORS + Kakao blocks)
   useEffect(() => {
     if (!isTop || extraInfo || !restaurant.id || !/^\d+$/.test(restaurant.id)) return;
     if (restaurant.menus && restaurant.menus.length > 0) return; // mock data already has menus
 
-    fetch(`https://place.map.kakao.com/m/main/v/${restaurant.id}`, {
-      credentials: 'include',
-      headers: {
-        Accept: 'application/json, text/plain, */*',
-        Referer: 'https://map.kakao.com/',
-      },
-    })
+    fetch(`/api/place?id=${restaurant.id}`)
       .then(r => (r.ok ? r.json() : null))
       .then(data => {
         if (!data) { setExtraInfo({ menus: null, hours: null, photoUrl: null }); return; }
-
-        // Photo
-        const photoUrl: string | null =
-          data.basicInfo?.mainphotourl ??
-          data.photo?.photoList?.[0]?.orgurl ??
-          null;
-
-        // Menus
-        const rawMenus: Array<{ menu: string; price?: string }> =
-          data.menuInfo?.menuList ?? [];
-        const menus = rawMenus.length > 0
-          ? rawMenus.slice(0, 8).map(m => ({
-              e: '🍽️', n: m.menu, d: '',
-              p: m.price
-                ? `${parseInt(m.price.replace(/[^0-9]/g, '')).toLocaleString('ko')}원`
-                : '',
-            }))
-          : null;
-
-        // Hours
-        let hours: BusinessHours | null = null;
-        const timeList: Array<{ dayOfWeek: string; timeSE: string }> =
-          data.basicInfo?.openHour?.periodList?.[0]?.timeList ?? [];
-        const weekday = timeList.find(t => t.dayOfWeek === 'WEEKDAY')?.timeSE;
-        const weekend = timeList.find(t => t.dayOfWeek === 'WEEKEND' || t.dayOfWeek === 'SAT')?.timeSE;
-        if (weekday) {
-          hours = {
-            weekday,
-            weekend: weekend ?? weekday,
-            breakTime: data.basicInfo?.openHour?.breakTime,
-            closedDay: data.basicInfo?.openHour?.closedDay,
-          };
-        }
-
-        setExtraInfo({ menus, hours, photoUrl });
+        setExtraInfo({
+          menus: data.menus ?? null,
+          hours: data.hours ?? null,
+          photoUrl: data.photoUrl ?? null,
+        });
       })
       .catch(() => setExtraInfo({ menus: null, hours: null, photoUrl: null }));
   // eslint-disable-next-line react-hooks/exhaustive-deps

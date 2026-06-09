@@ -7,31 +7,72 @@ function parsePriceStr(s: string): string {
   return n.toLocaleString('ko') + '원';
 }
 
-export async function GET(req: NextRequest) {
-  const id = req.nextUrl.searchParams.get('id');
-  if (!id) return NextResponse.json({ menus: null, hours: null });
+const HEADERS = {
+  'User-Agent':
+    'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
+  'Accept-Language': 'ko-KR,ko;q=0.9,en;q=0.8',
+  'Referer': 'https://map.kakao.com/',
+};
 
+async function fetchJson(id: string) {
+  const res = await fetch(`https://place.map.kakao.com/m/main/v/${id}`, {
+    headers: { ...HEADERS, Accept: 'application/json, text/plain, */*' },
+    next: { revalidate: 3600 },
+  });
+  if (!res.ok) return null;
+  const ct = res.headers.get('content-type') ?? '';
+  if (!ct.includes('json')) return null;
+  return res.json() as Promise<Record<string, unknown>>;
+}
+
+async function fetchOgImage(id: string): Promise<string | null> {
   try {
-    const res = await fetch(`https://place.map.kakao.com/m/main/v/${id}`, {
+    const res = await fetch(`https://place.map.kakao.com/${id}`, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1',
-        'Accept': 'application/json, text/plain, */*',
-        'Referer': 'https://map.kakao.com/',
-        'Origin': 'https://map.kakao.com',
+        ...HEADERS,
+        Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
       },
       next: { revalidate: 3600 },
     });
+    if (!res.ok) return null;
+    const html = await res.text();
+    return html.match(/<meta property="og:image" content="([^"]+)"/)?.[1] ?? null;
+  } catch {
+    return null;
+  }
+}
 
-    if (!res.ok) return NextResponse.json({ menus: null, hours: null });
+export async function GET(req: NextRequest) {
+  const id = req.nextUrl.searchParams.get('id');
+  if (!id) return NextResponse.json({ menus: null, hours: null, photoUrl: null });
 
-    const contentType = res.headers.get('content-type') ?? '';
-    if (!contentType.includes('json')) return NextResponse.json({ menus: null, hours: null });
+  try {
+    // Try JSON API first
+    const data = await fetchJson(id);
 
-    const data = await res.json();
+    // Extract photo
+    let photoUrl: string | null = null;
+    if (data) {
+      const basic = data.basicInfo as Record<string, unknown> | undefined;
+      const photo = data.photo as Record<string, unknown> | undefined;
+      photoUrl =
+        (basic?.mainphotourl as string | undefined) ??
+        ((photo?.photoList as Array<{ orgurl?: string }> | undefined)?.[0]?.orgurl ?? null);
+    }
 
-    // ── 메뉴 파싱 ──
+    // Fallback: parse og:image from HTML page
+    if (!photoUrl) {
+      photoUrl = await fetchOgImage(id);
+    }
+
+    if (!data) {
+      return NextResponse.json({ menus: null, hours: null, photoUrl });
+    }
+
+    // Menus
+    const menuInfo = data.menuInfo as Record<string, unknown> | undefined;
     const rawMenus: Array<{ menu: string; price?: string }> =
-      data.menuInfo?.menuList ?? [];
+      (menuInfo?.menuList as Array<{ menu: string; price?: string }> | undefined) ?? [];
     const menus = rawMenus.slice(0, 8).map(item => ({
       e: '🍽️',
       n: item.menu,
@@ -39,38 +80,36 @@ export async function GET(req: NextRequest) {
       p: item.price ? parsePriceStr(item.price) : '',
     }));
 
-    // ── 영업시간 파싱 ──
+    // Hours
     let hours = null;
-    const periodList: Array<{
-      timeList?: Array<{ dayOfWeek: string; timeSE: string }>;
-    }> = data.basicInfo?.openHour?.periodList ?? [];
+    const basic = data.basicInfo as Record<string, unknown> | undefined;
+    const openHour = basic?.openHour as Record<string, unknown> | undefined;
+    const periodList: Array<{ timeList?: Array<{ dayOfWeek: string; timeSE: string }> }> =
+      (openHour?.periodList as Array<{ timeList?: Array<{ dayOfWeek: string; timeSE: string }> }> | undefined) ?? [];
 
     if (periodList.length > 0) {
       const timeList = periodList[0]?.timeList ?? [];
       const weekday =
-        timeList.find(t => t.dayOfWeek === 'WEEKDAY')?.timeSE ??
-        timeList[0]?.timeSE;
+        timeList.find(t => t.dayOfWeek === 'WEEKDAY')?.timeSE ?? timeList[0]?.timeSE;
       const weekend =
-        timeList.find(t => t.dayOfWeek === 'WEEKEND' || t.dayOfWeek === 'SAT')
-          ?.timeSE ?? weekday;
-      const breakTime: string | undefined =
-        data.basicInfo?.openHour?.breakTime;
-      const closedDay: string | undefined =
-        data.basicInfo?.openHour?.closedDay;
-
+        timeList.find(t => t.dayOfWeek === 'WEEKEND' || t.dayOfWeek === 'SAT')?.timeSE ??
+        weekday;
       if (weekday) {
-        hours = { weekday, weekend: weekend ?? weekday, breakTime, closedDay };
+        hours = {
+          weekday,
+          weekend: weekend ?? weekday,
+          breakTime: openHour?.breakTime as string | undefined,
+          closedDay: openHour?.closedDay as string | undefined,
+        };
       }
     }
 
     return NextResponse.json({
       menus: menus.length > 0 ? menus : null,
       hours,
-      placeUrl: data.basicInfo?.placenamefull
-        ? `https://place.map.kakao.com/${id}`
-        : null,
+      photoUrl,
     });
   } catch {
-    return NextResponse.json({ menus: null, hours: null });
+    return NextResponse.json({ menus: null, hours: null, photoUrl: null });
   }
 }
