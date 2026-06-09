@@ -215,15 +215,6 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
 
             {/* ── Front face ── */}
             <div className="card-face card-face-front">
-              {/* Blurred background — same image fills gaps without letterboxing */}
-              <img
-                src={currentPhoto}
-                alt=""
-                className="card-image-bg"
-                aria-hidden="true"
-                draggable={false}
-              />
-              {/* Main image — full, uncropped */}
               <img
                 key={currentPhoto}
                 src={currentPhoto}

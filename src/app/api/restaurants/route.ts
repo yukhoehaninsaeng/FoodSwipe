@@ -16,8 +16,8 @@ const CATEGORY_QUERIES: Record<string, string> = {
 };
 
 function getPhotoUrl(placeId: string): string {
-  // Landscape 3:2 — matches typical restaurant photo ratio
-  return `https://t1.kakaocdn.net/thumb/C900x600.q85/?fname=https://t1.kakaocdn.net/shop/info/v2/${placeId}/thumbnail`;
+  // Portrait 2:3 @ high res — matches card aspect ratio, crisp on 3x Retina
+  return `https://t1.kakaocdn.net/thumb/C900x1350.q90/?fname=https://t1.kakaocdn.net/shop/info/v2/${placeId}/thumbnail`;
 }
 
 function getPriceLevel(categoryName: string): string {
