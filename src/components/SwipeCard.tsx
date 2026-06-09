@@ -44,20 +44,20 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
   const velocityRef = useRef({ vx: 0, vy: 0, prevX: 0, prevY: 0, time: 0 });
   const isTop = stackIndex === 0;
 
-  // Fetch place detail when card is flipped and no local menu data
+  // Prefetch place detail as soon as this card becomes the top card
   useEffect(() => {
-    if (!flipped) return;
-    if (restaurant.menus && restaurant.menus.length > 0) return; // already have data
-    if (extraInfo !== null) return; // already fetched
-    const numericId = /^\d+$/.test(restaurant.id);
-    if (!numericId) return; // mock data id, skip
+    if (!isTop) return;
+    if (restaurant.menus && restaurant.menus.length > 0) return;
+    if (extraInfo !== null) return;
+    if (!/^\d+$/.test(restaurant.id)) return; // mock data, skip
     setExtraLoading(true);
     fetch(`/api/place?id=${restaurant.id}`)
       .then(r => r.json())
       .then((d: ExtraInfo) => setExtraInfo(d))
       .catch(() => setExtraInfo({ menus: null, hours: null }))
       .finally(() => setExtraLoading(false));
-  }, [flipped, restaurant.id, restaurant.menus, extraInfo]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isTop]);
 
   // Convenience aliases for render
   const dragX = dragPos.x;
