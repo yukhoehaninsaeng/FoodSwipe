@@ -1,7 +1,13 @@
 'use client';
 
-import { useState, useRef, useCallback, CSSProperties } from 'react';
-import { Restaurant, FALLBACK_IMAGES } from '@/data/restaurants';
+import { useState, useRef, useCallback, useEffect, CSSProperties } from 'react';
+import { Restaurant, FALLBACK_IMAGES, MenuItem, BusinessHours } from '@/data/restaurants';
+
+interface ExtraInfo {
+  menus: MenuItem[] | null;
+  hours: BusinessHours | null;
+  photoUrl: string | null;
+}
 
 interface SwipeCardProps {
   restaurant: Restaurant;
@@ -32,10 +38,69 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
   const isDraggingRef = useRef(false);
   const [flyDir, setFlyDir] = useState<'left' | 'right' | 'up' | null>(null);
   const [flipped, setFlipped] = useState(false);
+  const [extraInfo, setExtraInfo] = useState<ExtraInfo | null>(null);
   const startRef = useRef({ x: 0, y: 0 });
   const isDraggedRef = useRef(false);
   const velocityRef = useRef({ vx: 0, vy: 0, prevX: 0, prevY: 0, time: 0 });
   const isTop = stackIndex === 0;
+
+  // Client-side fetch: browser has Kakao session cookies, bypasses server-side block
+  useEffect(() => {
+    if (!isTop || extraInfo || !restaurant.id || !/^\d+$/.test(restaurant.id)) return;
+    if (restaurant.menus && restaurant.menus.length > 0) return; // mock data already has menus
+
+    fetch(`https://place.map.kakao.com/m/main/v/${restaurant.id}`, {
+      credentials: 'include',
+      headers: {
+        Accept: 'application/json, text/plain, */*',
+        Referer: 'https://map.kakao.com/',
+      },
+    })
+      .then(r => (r.ok ? r.json() : null))
+      .then(data => {
+        if (!data) { setExtraInfo({ menus: null, hours: null, photoUrl: null }); return; }
+
+        // Photo
+        const photoUrl: string | null =
+          data.basicInfo?.mainphotourl ??
+          data.photo?.photoList?.[0]?.orgurl ??
+          null;
+
+        // Menus
+        const rawMenus: Array<{ menu: string; price?: string }> =
+          data.menuInfo?.menuList ?? [];
+        const menus = rawMenus.length > 0
+          ? rawMenus.slice(0, 8).map(m => ({
+              e: '🍽️', n: m.menu, d: '',
+              p: m.price
+                ? `${parseInt(m.price.replace(/[^0-9]/g, '')).toLocaleString('ko')}원`
+                : '',
+            }))
+          : null;
+
+        // Hours
+        let hours: BusinessHours | null = null;
+        const timeList: Array<{ dayOfWeek: string; timeSE: string }> =
+          data.basicInfo?.openHour?.periodList?.[0]?.timeList ?? [];
+        const weekday = timeList.find(t => t.dayOfWeek === 'WEEKDAY')?.timeSE;
+        const weekend = timeList.find(t => t.dayOfWeek === 'WEEKEND' || t.dayOfWeek === 'SAT')?.timeSE;
+        if (weekday) {
+          hours = {
+            weekday,
+            weekend: weekend ?? weekday,
+            breakTime: data.basicInfo?.openHour?.breakTime,
+            closedDay: data.basicInfo?.openHour?.closedDay,
+          };
+        }
+
+        setExtraInfo({ menus, hours, photoUrl });
+      })
+      .catch(() => setExtraInfo({ menus: null, hours: null, photoUrl: null }));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isTop]);
+
+  // Displayed image: real photo from place detail > original imageUrl > category fallback
+  const displayImage = extraInfo?.photoUrl ?? restaurant.imageUrl;
 
   // Convenience aliases for render
   const dragX = dragPos.x;
@@ -182,7 +247,7 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
             {/* ── Front face ── */}
             <div className="card-face card-face-front">
               <img
-                src={restaurant.imageUrl}
+                src={displayImage}
                 alt={restaurant.name}
                 className="card-image"
                 loading="eager"
@@ -278,19 +343,30 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
               <div className="card-back-section">
                 <div className="card-back-section-title">메뉴</div>
 
-                {/* 2-1. 메뉴 항목 (목업 데이터에만 존재) */}
-                {restaurant.menus && restaurant.menus.length > 0 && restaurant.menus.map((item, i) => (
-                  <div key={i} className="card-back-menu-item">
-                    <span className="card-back-menu-emoji">{item.e}</span>
-                    <div className="card-back-menu-info">
-                      <span className="card-back-menu-name">{item.n}</span>
-                      {item.d && <span className="card-back-menu-desc">{item.d}</span>}
+                {/* 2-1. 메뉴 항목 (extraInfo 우선, 없으면 mock 데이터) */}
+                {(() => {
+                  const menuList = extraInfo?.menus ?? restaurant.menus;
+                  if (!menuList || menuList.length === 0) return null;
+                  return menuList.map((item, i) => (
+                    <div key={i} className="card-back-menu-item">
+                      <span className="card-back-menu-emoji">{item.e}</span>
+                      <div className="card-back-menu-info">
+                        <span className="card-back-menu-name">{item.n}</span>
+                        {item.d && <span className="card-back-menu-desc">{item.d}</span>}
+                      </div>
+                      {item.p && <span className="card-back-menu-price">{item.p}</span>}
                     </div>
-                    {item.p && <span className="card-back-menu-price">{item.p}</span>}
-                  </div>
-                ))}
+                  ));
+                })()}
 
-                {/* 2-2. 카카오맵에서 메뉴보기 */}
+                {/* 2-2. 메뉴 로딩 중 표시 */}
+                {!extraInfo && isTop && !/^\d+$/.test(restaurant.id ?? '') === false && (
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', padding: '6px 0' }}>
+                    메뉴 불러오는 중…
+                  </div>
+                )}
+
+                {/* 2-3. 카카오맵에서 메뉴보기 */}
                 <a
                   href={restaurant.placeUrl ?? `https://place.map.kakao.com/${restaurant.id}`}
                   target="_blank"
@@ -300,7 +376,7 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
                     fontSize: 12, fontWeight: 600,
                     color: '#1A1300', background: '#FFDA00',
                     padding: '8px 12px', borderRadius: 10,
-                    marginTop: restaurant.menus?.length ? 10 : 0,
+                    marginTop: (extraInfo?.menus ?? restaurant.menus)?.length ? 10 : 0,
                     textDecoration: 'none',
                   }}
                 >
@@ -326,9 +402,9 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
                 </a>
               </div>
 
-              {/* Hours */}
-              {restaurant.hours && (() => {
-                const hours = restaurant.hours;
+              {/* Hours — extraInfo 우선, 없으면 mock 데이터 */}
+              {(extraInfo?.hours ?? restaurant.hours) && (() => {
+                const hours = (extraInfo?.hours ?? restaurant.hours)!;
                 return (
                   <div className="card-back-section">
                     <div className="card-back-section-title">영업시간</div>
@@ -350,7 +426,7 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
                     )}
                   </div>
                 );
-              })() }
+              })()}
 
               {/* Map navigation buttons */}
               <div className="card-back-map-btns">

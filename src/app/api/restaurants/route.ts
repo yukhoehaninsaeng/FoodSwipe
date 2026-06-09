@@ -15,8 +15,9 @@ const CATEGORY_QUERIES: Record<string, string> = {
   dessert:  '디저트',
 };
 
-function getPhotoUrl(category: string): string {
-  return FALLBACK_IMAGES[category] ?? FALLBACK_IMAGES['음식점'] ?? FALLBACK_IMAGES['한식'];
+function getPhotoUrl(placeId: string): string {
+  // Direct Kakao CDN thumbnail — loads fine in <img> without CORS
+  return `https://t1.kakaocdn.net/thumb/C448x336.q70/?fname=https://t1.kakaocdn.net/shop/info/v2/${placeId}/thumbnail`;
 }
 
 function getPriceLevel(categoryName: string): string {
@@ -95,7 +96,7 @@ export async function GET(req: NextRequest) {
           priceLevel: getPriceLevel(place.category_name),
           address: place.road_address_name || place.address_name,
           tags: catParts.slice(2, 4),
-          imageUrl: getPhotoUrl(mainCat),
+          imageUrl: getPhotoUrl(place.id),
           placeUrl: place.place_url,
           phone: place.phone,
         });
