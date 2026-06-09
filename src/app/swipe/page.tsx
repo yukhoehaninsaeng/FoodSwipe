@@ -444,7 +444,7 @@ function MenuPickerSheet({
             <button
               onClick={() => {
                 const q = encodeURIComponent(picked.name + (picked.address ? ' ' + picked.address : ''));
-                window.open(`https://map.naver.com/v5/search/${q}`, '_blank', 'noopener noreferrer');
+                window.open(`https://map.naver.com/p/search/${q}`, '_blank', 'noopener noreferrer');
               }}
               style={{
                 width: '100%', padding: '14px 16px', borderRadius: 14, marginBottom: 16,

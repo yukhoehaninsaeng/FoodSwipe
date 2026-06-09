@@ -42,7 +42,7 @@ function RestaurantDetailSheet({
 
   const openNaverMap = () => {
     const q = encodeURIComponent(r.name + (r.address ? ' ' + r.address : ''));
-    window.open(`https://map.naver.com/v5/search/${q}`, '_blank', 'noopener noreferrer');
+    window.open(`https://map.naver.com/p/search/${q}`, '_blank', 'noopener noreferrer');
   };
 
   return (

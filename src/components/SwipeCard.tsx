@@ -14,16 +14,14 @@ const VELOCITY_THRESHOLD = 380; // quick-flick threshold (px/s)
 const ROTATION_FACTOR = 0.08;
 const FLIP_DRAG_LIMIT = 10;    // min drag to cancel tap→flip
 
-function openKakaoSearch(name: string) {
-  window.open(`https://map.kakao.com/link/search/${encodeURIComponent(name)}`, '_blank');
+function openKakaoMap(name: string, address: string) {
+  const q = encodeURIComponent(name + (address ? ' ' + address : ''));
+  window.open(`https://map.kakao.com/?q=${q}`, '_blank', 'noopener noreferrer');
 }
 
-function openKakaoNavi(name: string, address: string) {
-  const dest = address || name;
-  window.open(
-    `https://map.kakao.com/link/to/${encodeURIComponent(name)},${encodeURIComponent(dest)}`,
-    '_blank'
-  );
+function openNaverMap(name: string, address: string) {
+  const q = encodeURIComponent(name + (address ? ' ' + address : ''));
+  window.open(`https://map.naver.com/p/search/${q}`, '_blank', 'noopener noreferrer');
 }
 
 export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCardProps) {
@@ -320,17 +318,19 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
               <div className="card-back-map-btns">
                 <button
                   className="card-back-map-btn"
-                  onClick={() => openKakaoSearch(restaurant.name)}
+                  style={{ background: '#FFDA00', color: '#1A1300' }}
+                  onClick={() => openKakaoMap(restaurant.name, restaurant.address)}
                 >
                   <i className="ti ti-map-2" />
                   카카오맵
                 </button>
                 <button
-                  className="card-back-map-btn card-back-map-btn-accent"
-                  onClick={() => openKakaoNavi(restaurant.name, restaurant.address)}
+                  className="card-back-map-btn"
+                  style={{ background: '#03C75A', color: '#fff' }}
+                  onClick={() => openNaverMap(restaurant.name, restaurant.address)}
                 >
                   <i className="ti ti-navigation" />
-                  길찾기
+                  네이버 지도
                 </button>
               </div>
             </div>
