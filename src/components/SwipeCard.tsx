@@ -107,9 +107,17 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
   const dragX = dragPos.x;
   const dragY = dragPos.y;
 
+  const pointerOnInteractiveRef = useRef(false);
+
   const onPointerDown = useCallback((e: React.PointerEvent) => {
-    if (!isTop || flipped) return;
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    if (!isTop) return;
+    // Track whether pointer started on an interactive element (button, link, input)
+    const target = e.target as HTMLElement;
+    pointerOnInteractiveRef.current = !!target.closest('button, a, input, textarea, select');
+    // Capture pointer only on front face — back face needs pan-y scroll to work
+    if (!flipped) {
+      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    }
     isDraggingRef.current = true;
     isDraggedRef.current = false;
     dragXRef.current = 0;
@@ -142,10 +150,11 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
     }
     dragXRef.current = dx;
     dragYRef.current = dy;
-    setDragPos({ x: dx, y: dy });
-  }, []);
+    // Visual drag only on front face
+    if (!flipped) setDragPos({ x: dx, y: dy });
+  }, [flipped]);
 
-  const onPointerUp = useCallback(() => {
+  const onPointerUp = useCallback((e?: React.PointerEvent) => {
     if (!isDraggingRef.current) return;
     isDraggingRef.current = false;
 
@@ -154,7 +163,10 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
     const { vx, vy } = velocityRef.current;
 
     if (!isDraggedRef.current) {
-      setFlipped(f => !f);
+      // Tap: toggle flip only if not on an interactive element
+      if (!pointerOnInteractiveRef.current) {
+        setFlipped(f => !f);
+      }
       dragXRef.current = 0;
       dragYRef.current = 0;
       setDragPos({ x: 0, y: 0 });
@@ -163,7 +175,8 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
 
     const goRight = dx > SWIPE_THRESHOLD || (vx > VELOCITY_THRESHOLD && dx > 20);
     const goLeft  = dx < -SWIPE_THRESHOLD || (vx < -VELOCITY_THRESHOLD && dx < -20);
-    const goUp    = (dy < -SWIPE_THRESHOLD || vy < -VELOCITY_THRESHOLD) && Math.abs(dx) < 60;
+    // Up-swipe only from front face
+    const goUp = !flipped && (dy < -SWIPE_THRESHOLD || vy < -VELOCITY_THRESHOLD) && Math.abs(dx) < 60;
 
     if (goRight) {
       setFlyDir('right');
@@ -179,7 +192,16 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
       dragYRef.current = 0;
       setDragPos({ x: 0, y: 0 });
     }
-  }, [onSwipe]);
+  }, [onSwipe, flipped]);
+
+  const onPointerCancel = useCallback(() => {
+    // Browser took over (e.g. scroll) — just reset tracking without firing swipe/flip
+    isDraggingRef.current = false;
+    isDraggedRef.current = false;
+    dragXRef.current = 0;
+    dragYRef.current = 0;
+    setDragPos({ x: 0, y: 0 });
+  }, []);
 
   const getFlyTransform = () => {
     if (flyDir === 'right') return `translateX(120vw) rotate(25deg)`;
@@ -213,7 +235,8 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
     transform,
     transition,
     zIndex: 3 - stackIndex,
-    touchAction: isTop && flipped ? 'auto' : undefined,
+    // pan-y when flipped: lets back face scroll vertically, our handler captures horizontal swipes
+    touchAction: isTop ? (flipped ? 'pan-y' : 'none') : undefined,
     background: stackIndex === 1
       ? 'var(--stack-card-1)'
       : stackIndex === 2
@@ -245,7 +268,7 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
-      onPointerCancel={onPointerUp}
+      onPointerCancel={onPointerCancel}
     >
       {stackIndex === 0 && (
         <div className="card-flip-container">
@@ -377,7 +400,6 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
             {/* ── Back face ── */}
             <div
               className="card-face card-face-back"
-              onPointerDown={e => e.stopPropagation()}
             >
               {/* Sticky header */}
               <div className="card-back-header">
