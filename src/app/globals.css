@@ -139,13 +139,24 @@ html, body {
 
 .swipe-card-wrapper.is-top:active { cursor: grabbing; }
 
-.card-image {
+.card-image-bg {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  background: #1a1a1a;
+  filter: blur(28px) brightness(0.45) saturate(1.4);
+  transform: scale(1.1); /* blur 가장자리 번짐 방지 */
+  pointer-events: none;
+}
+
+.card-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* 이미지 전체 표시, 자르기 없음 */
+  z-index: 1;
 }
 
 .card-vignette-top {
