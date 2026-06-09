@@ -6,7 +6,7 @@ import { Restaurant, FALLBACK_IMAGES, MenuItem, BusinessHours } from '@/data/res
 interface ExtraInfo {
   menus: MenuItem[] | null;
   hours: BusinessHours | null;
-  photoUrl: string | null;
+  photos: string[];
 }
 
 interface SwipeCardProps {
@@ -39,6 +39,7 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
   const [flyDir, setFlyDir] = useState<'left' | 'right' | 'up' | null>(null);
   const [flipped, setFlipped] = useState(false);
   const [extraInfo, setExtraInfo] = useState<ExtraInfo | null>(null);
+  const [photoIdx, setPhotoIdx] = useState(0);
   const startRef = useRef({ x: 0, y: 0 });
   const isDraggedRef = useRef(false);
   const velocityRef = useRef({ vx: 0, vy: 0, prevX: 0, prevY: 0, time: 0 });
@@ -52,19 +53,23 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
     fetch(`/api/place?id=${restaurant.id}`)
       .then(r => (r.ok ? r.json() : null))
       .then(data => {
-        if (!data) { setExtraInfo({ menus: null, hours: null, photoUrl: null }); return; }
+        if (!data) { setExtraInfo({ menus: null, hours: null, photos: [] }); return; }
         setExtraInfo({
           menus: data.menus ?? null,
           hours: data.hours ?? null,
-          photoUrl: data.photoUrl ?? null,
+          photos: data.photos ?? [],
         });
       })
-      .catch(() => setExtraInfo({ menus: null, hours: null, photoUrl: null }));
+      .catch(() => setExtraInfo({ menus: null, hours: null, photos: [] }));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isTop]);
 
-  // Displayed image: real photo from place detail > original imageUrl > category fallback
-  const displayImage = extraInfo?.photoUrl ?? restaurant.imageUrl;
+  // Photo array: extraInfo photos > single imageUrl fallback
+  const allPhotos: string[] =
+    extraInfo?.photos && extraInfo.photos.length > 0
+      ? extraInfo.photos
+      : [restaurant.imageUrl];
+  const currentPhoto = allPhotos[Math.min(photoIdx, allPhotos.length - 1)];
 
   // Convenience aliases for render
   const dragX = dragPos.x;
@@ -211,7 +216,8 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
             {/* ── Front face ── */}
             <div className="card-face card-face-front">
               <img
-                src={displayImage}
+                key={currentPhoto}
+                src={currentPhoto}
                 alt={restaurant.name}
                 className="card-image"
                 loading="eager"
@@ -220,6 +226,42 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
               />
               <div className="card-vignette-top" />
               <div className="card-vignette-bottom" />
+
+              {/* Photo progress bar (Instagram stories style) */}
+              {allPhotos.length > 1 && (
+                <div className="photo-progress-bar">
+                  {allPhotos.slice(0, 6).map((_, i) => (
+                    <div
+                      key={i}
+                      className={`photo-progress-segment${i === photoIdx ? ' active' : i < photoIdx ? ' done' : ''}`}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {/* Transparent tap zones: left 30% = prev, right 30% = next, center = flip */}
+              {allPhotos.length > 1 && (
+                <>
+                  <button
+                    className="photo-nav-btn photo-nav-prev"
+                    onPointerDown={e => e.stopPropagation()}
+                    onClick={e => {
+                      e.stopPropagation();
+                      setPhotoIdx(i => Math.max(0, i - 1));
+                    }}
+                    aria-label="이전 사진"
+                  />
+                  <button
+                    className="photo-nav-btn photo-nav-next"
+                    onPointerDown={e => e.stopPropagation()}
+                    onClick={e => {
+                      e.stopPropagation();
+                      setPhotoIdx(i => Math.min(allPhotos.length - 1, i + 1));
+                    }}
+                    aria-label="다음 사진"
+                  />
+                </>
+              )}
 
               {restaurant.isSponsored && (
                 <div className="card-sponsor-badge">SPONSORED</div>

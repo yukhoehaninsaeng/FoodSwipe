@@ -16,8 +16,8 @@ const CATEGORY_QUERIES: Record<string, string> = {
 };
 
 function getPhotoUrl(placeId: string): string {
-  // 세로형 카드(~370×650 CSS px, Retina 3x → 1110×1950 물리 px)에 맞게 큰 사이즈 요청
-  return `https://t1.kakaocdn.net/thumb/C720x1080.q85/?fname=https://t1.kakaocdn.net/shop/info/v2/${placeId}/thumbnail`;
+  // Landscape 3:2 — matches typical restaurant photo ratio
+  return `https://t1.kakaocdn.net/thumb/C900x600.q85/?fname=https://t1.kakaocdn.net/shop/info/v2/${placeId}/thumbnail`;
 }
 
 function getPriceLevel(categoryName: string): string {

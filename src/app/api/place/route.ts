@@ -50,23 +50,30 @@ export async function GET(req: NextRequest) {
     // Try JSON API first
     const data = await fetchJson(id);
 
-    // Extract photo
-    let photoUrl: string | null = null;
+    // Extract photos array (up to 6)
+    const photos: string[] = [];
     if (data) {
       const basic = data.basicInfo as Record<string, unknown> | undefined;
-      const photo = data.photo as Record<string, unknown> | undefined;
-      photoUrl =
-        (basic?.mainphotourl as string | undefined) ??
-        ((photo?.photoList as Array<{ orgurl?: string }> | undefined)?.[0]?.orgurl ?? null);
+      const mainPhoto = basic?.mainphotourl as string | undefined;
+      if (mainPhoto) photos.push(mainPhoto);
+
+      const photoList =
+        (data.photo as { photoList?: Array<{ orgurl?: string }> } | undefined)?.photoList ?? [];
+      for (const p of photoList) {
+        if (p.orgurl && p.orgurl !== mainPhoto && photos.length < 6) {
+          photos.push(p.orgurl);
+        }
+      }
     }
 
-    // Fallback: parse og:image from HTML page
-    if (!photoUrl) {
-      photoUrl = await fetchOgImage(id);
+    // Fallback: og:image if no photos from JSON
+    if (photos.length === 0) {
+      const ogImage = await fetchOgImage(id);
+      if (ogImage) photos.push(ogImage);
     }
 
     if (!data) {
-      return NextResponse.json({ menus: null, hours: null, photoUrl });
+      return NextResponse.json({ menus: null, hours: null, photos });
     }
 
     // Menus
@@ -107,7 +114,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       menus: menus.length > 0 ? menus : null,
       hours,
-      photoUrl,
+      photos,
     });
   } catch {
     return NextResponse.json({ menus: null, hours: null, photoUrl: null });
