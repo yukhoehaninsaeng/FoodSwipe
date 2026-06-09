@@ -1,7 +1,12 @@
 'use client';
 
-import { useState, useRef, useCallback, CSSProperties } from 'react';
-import { Restaurant, FALLBACK_IMAGES } from '@/data/restaurants';
+import { useState, useRef, useCallback, useEffect, CSSProperties } from 'react';
+import { Restaurant, FALLBACK_IMAGES, MenuItem, BusinessHours } from '@/data/restaurants';
+
+interface ExtraInfo {
+  menus: MenuItem[] | null;
+  hours: BusinessHours | null;
+}
 
 interface SwipeCardProps {
   restaurant: Restaurant;
@@ -32,10 +37,27 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
   const isDraggingRef = useRef(false);
   const [flyDir, setFlyDir] = useState<'left' | 'right' | 'up' | null>(null);
   const [flipped, setFlipped] = useState(false);
+  const [extraInfo, setExtraInfo] = useState<ExtraInfo | null>(null);
+  const [extraLoading, setExtraLoading] = useState(false);
   const startRef = useRef({ x: 0, y: 0 });
   const isDraggedRef = useRef(false);
   const velocityRef = useRef({ vx: 0, vy: 0, prevX: 0, prevY: 0, time: 0 });
   const isTop = stackIndex === 0;
+
+  // Fetch place detail when card is flipped and no local menu data
+  useEffect(() => {
+    if (!flipped) return;
+    if (restaurant.menus && restaurant.menus.length > 0) return; // already have data
+    if (extraInfo !== null) return; // already fetched
+    const numericId = /^\d+$/.test(restaurant.id);
+    if (!numericId) return; // mock data id, skip
+    setExtraLoading(true);
+    fetch(`/api/place?id=${restaurant.id}`)
+      .then(r => r.json())
+      .then((d: ExtraInfo) => setExtraInfo(d))
+      .catch(() => setExtraInfo({ menus: null, hours: null }))
+      .finally(() => setExtraLoading(false));
+  }, [flipped, restaurant.id, restaurant.menus, extraInfo]);
 
   // Convenience aliases for render
   const dragX = dragPos.x;
@@ -265,44 +287,84 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
               )}
 
               {/* Menus */}
-              {restaurant.menus && restaurant.menus.length > 0 && (
-                <div className="card-back-section">
-                  <div className="card-back-section-title">메뉴</div>
-                  {restaurant.menus.map((item, i) => (
-                    <div key={i} className="card-back-menu-item">
-                      <span className="card-back-menu-emoji">{item.e}</span>
-                      <div className="card-back-menu-info">
-                        <span className="card-back-menu-name">{item.n}</span>
-                        <span className="card-back-menu-desc">{item.d}</span>
-                      </div>
-                      <span className="card-back-menu-price">{item.p}</span>
+              {(() => {
+                const menus = restaurant.menus ?? extraInfo?.menus ?? null;
+                if (extraLoading) {
+                  return (
+                    <div className="card-back-section" style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-muted)', fontSize: 12 }}>
+                      <div style={{
+                        width: 14, height: 14, borderRadius: '50%',
+                        border: '2px solid var(--border-color)',
+                        borderTopColor: 'var(--accent)',
+                        animation: 'spin 0.7s linear infinite',
+                        flexShrink: 0,
+                      }} />
+                      메뉴 불러오는 중...
                     </div>
-                  ))}
-                </div>
-              )}
+                  );
+                }
+                if (menus && menus.length > 0) {
+                  return (
+                    <div className="card-back-section">
+                      <div className="card-back-section-title">메뉴</div>
+                      {menus.map((item, i) => (
+                        <div key={i} className="card-back-menu-item">
+                          <span className="card-back-menu-emoji">{item.e}</span>
+                          <div className="card-back-menu-info">
+                            <span className="card-back-menu-name">{item.n}</span>
+                            {item.d && <span className="card-back-menu-desc">{item.d}</span>}
+                          </div>
+                          {item.p && <span className="card-back-menu-price">{item.p}</span>}
+                        </div>
+                      ))}
+                    </div>
+                  );
+                }
+                if (extraInfo !== null && !menus && restaurant.placeUrl) {
+                  return (
+                    <div className="card-back-section" style={{ borderBottom: 'none' }}>
+                      <div className="card-back-section-title">메뉴</div>
+                      <a
+                        href={restaurant.placeUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ fontSize: 12, color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: 4 }}
+                      >
+                        <i className="ti ti-external-link" style={{ fontSize: 12 }} />
+                        카카오맵에서 메뉴 보기
+                      </a>
+                    </div>
+                  );
+                }
+                return null;
+              })()}
 
               {/* Hours */}
-              {restaurant.hours && (
-                <div className="card-back-section">
-                  <div className="card-back-section-title">영업시간</div>
-                  <div className="card-back-hours-row">
-                    <span>평일</span><span>{restaurant.hours.weekday}</span>
-                  </div>
-                  <div className="card-back-hours-row">
-                    <span>주말</span><span>{restaurant.hours.weekend}</span>
-                  </div>
-                  {restaurant.hours.breakTime && (
+              {(() => {
+                const hours = restaurant.hours ?? extraInfo?.hours ?? null;
+                if (!hours) return null;
+                return (
+                  <div className="card-back-section">
+                    <div className="card-back-section-title">영업시간</div>
                     <div className="card-back-hours-row">
-                      <span>브레이크</span><span>{restaurant.hours.breakTime}</span>
+                      <span>평일</span><span>{hours.weekday}</span>
                     </div>
-                  )}
-                  {restaurant.hours.closedDay && (
-                    <div className="card-back-hours-row" style={{ color: 'var(--accent)' }}>
-                      <span>정기휴무</span><span>{restaurant.hours.closedDay}</span>
+                    <div className="card-back-hours-row">
+                      <span>주말</span><span>{hours.weekend}</span>
                     </div>
-                  )}
-                </div>
-              )}
+                    {hours.breakTime && (
+                      <div className="card-back-hours-row">
+                        <span>브레이크</span><span>{hours.breakTime}</span>
+                      </div>
+                    )}
+                    {hours.closedDay && (
+                      <div className="card-back-hours-row" style={{ color: 'var(--accent)' }}>
+                        <span>정기휴무</span><span>{hours.closedDay}</span>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
 
               {/* Address */}
               {restaurant.address && (
