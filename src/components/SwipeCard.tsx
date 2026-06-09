@@ -45,31 +45,62 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
   const velocityRef = useRef({ vx: 0, vy: 0, prevX: 0, prevY: 0, time: 0 });
   const isTop = stackIndex === 0;
 
-  // Prefetch place detail via server-side proxy (avoids CORS + Kakao blocks)
+  // Prefetch place detail via server proxy + test extra CDN photo paths client-side
   useEffect(() => {
-    if (!isTop || extraInfo || !restaurant.id || !/^\d+$/.test(restaurant.id)) return;
-    if (restaurant.menus && restaurant.menus.length > 0) return; // mock data already has menus
+    if (!isTop || extraInfo !== null || !restaurant.id || !/^\d+$/.test(restaurant.id)) return;
+    if (restaurant.menus && restaurant.menus.length > 0) return;
 
-    fetch(`/api/place?id=${restaurant.id}`)
+    const isKakaoId = /^\d+$/.test(restaurant.id);
+
+    // Test a CDN path: image requests have no CORS restriction
+    const testCdn = (path: string): Promise<string | null> =>
+      new Promise(resolve => {
+        if (typeof window === 'undefined') { resolve(null); return; }
+        const img = new window.Image();
+        const url = `https://t1.kakaocdn.net/thumb/C900x1350.q90/?fname=https://t1.kakaocdn.net/shop/info/v2/${restaurant.id}/${path}`;
+        const timer = setTimeout(() => { img.src = ''; resolve(null); }, 4000);
+        img.onload = () => { clearTimeout(timer); resolve(url); };
+        img.onerror = () => { clearTimeout(timer); resolve(null); };
+        img.src = url;
+      });
+
+    const apiCall = fetch(`/api/place?id=${restaurant.id}`)
       .then(r => (r.ok ? r.json() : null))
-      .then(data => {
-        if (!data) { setExtraInfo({ menus: null, hours: null, photos: [] }); return; }
-        setExtraInfo({
-          menus: data.menus ?? null,
-          hours: data.hours ?? null,
-          photos: data.photos ?? [],
-        });
-      })
-      .catch(() => setExtraInfo({ menus: null, hours: null, photos: [] }));
+      .catch(() => null);
+
+    // Speculatively test extra CDN photo paths while waiting for API
+    const cdnTests = isKakaoId
+      ? [testCdn('photo/1'), testCdn('photo/2'), testCdn('1'), testCdn('2')]
+      : [];
+
+    Promise.all([apiCall, ...cdnTests]).then(([apiData, ...cdnResults]) => {
+      const extraCdn = (cdnResults as (string | null)[]).filter(Boolean) as string[];
+      const apiPhotos: string[] = apiData?.photos ?? [];
+
+      // Merge: API photos first, then CDN extras (de-duped)
+      const merged = [...apiPhotos];
+      for (const url of extraCdn) {
+        if (!merged.includes(url)) merged.push(url);
+      }
+
+      setExtraInfo({
+        menus: apiData?.menus ?? null,
+        hours: apiData?.hours ?? null,
+        photos: merged,
+      });
+    });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isTop]);
 
-  // Photo array: extraInfo photos > single imageUrl fallback
-  const allPhotos: string[] =
-    extraInfo?.photos && extraInfo.photos.length > 0
-      ? extraInfo.photos
-      : [restaurant.imageUrl];
-  const currentPhoto = allPhotos[Math.min(photoIdx, allPhotos.length - 1)];
+  // Photo array: extraInfo photos > restaurant.photos (mock) > single CDN thumb
+  const allPhotos: string[] = (() => {
+    if (extraInfo?.photos?.length) return extraInfo.photos;
+    if (restaurant.photos?.length) return restaurant.photos;
+    return [restaurant.imageUrl];
+  })();
+
+  const clampedIdx = Math.min(photoIdx, allPhotos.length - 1);
+  const currentPhoto = allPhotos[clampedIdx];
 
   // Convenience aliases for render
   const dragX = dragPos.x;
@@ -196,8 +227,14 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
     : 0;
 
   const handleImgError = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    const fallback = FALLBACK_IMAGES[restaurant.category];
-    if (fallback && e.currentTarget.src !== fallback) e.currentTarget.src = fallback;
+    if (clampedIdx === 0) {
+      // First photo: swap to category fallback
+      const fallback = FALLBACK_IMAGES[restaurant.category];
+      if (fallback && e.currentTarget.src !== fallback) e.currentTarget.src = fallback;
+    } else {
+      // Later photos: go back to previous photo
+      setPhotoIdx(i => Math.max(0, i - 1));
+    }
   };
 
   return (
