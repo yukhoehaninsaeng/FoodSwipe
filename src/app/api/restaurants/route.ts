@@ -14,6 +14,56 @@ const CATEGORY_QUERIES: Record<string, string> = {
   dessert:  '디저트',
 };
 
+// Multiple food photos per category — picked consistently by placeId hash
+const CATEGORY_PHOTOS: Record<string, string[]> = {
+  '한식': [
+    'https://images.unsplash.com/photo-1617195737496-bc30194e3a19?w=600&h=800&q=80&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1583623025817-d180a2221d0a?w=600&h=800&q=80&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1590301157890-4810ed352733?w=600&h=800&q=80&auto=format&fit=crop',
+  ],
+  '일식': [
+    'https://images.unsplash.com/photo-1553621042-f6e147245754?w=600&h=800&q=80&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=600&h=800&q=80&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1617196034183-421b4040ed20?w=600&h=800&q=80&auto=format&fit=crop',
+  ],
+  '양식': [
+    'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=600&h=800&q=80&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&h=800&q=80&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1482049016688-2d3e1b311543?w=600&h=800&q=80&auto=format&fit=crop',
+  ],
+  '중식': [
+    'https://images.unsplash.com/photo-1563245372-f21724e3856d?w=600&h=800&q=80&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1603360946369-dc9bb6258143?w=600&h=800&q=80&auto=format&fit=crop',
+  ],
+  '카페': [
+    'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600&h=800&q=80&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=600&h=800&q=80&auto=format&fit=crop',
+  ],
+  '분식': [
+    'https://images.unsplash.com/photo-1542010589005-d1eacc3918f2?w=600&h=800&q=80&auto=format&fit=crop',
+  ],
+  '치킨': [
+    'https://images.unsplash.com/photo-1569565782892-1bdcf1b0b9c6?w=600&h=800&q=80&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1527477396000-e27163b481c2?w=600&h=800&q=80&auto=format&fit=crop',
+  ],
+  '해산물': [
+    'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=600&h=800&q=80&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1559742811-822873691df8?w=600&h=800&q=80&auto=format&fit=crop',
+  ],
+  '디저트': [
+    'https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=600&h=800&q=80&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1551024601-bec78aea704b?w=600&h=800&q=80&auto=format&fit=crop',
+  ],
+};
+const DEFAULT_PHOTOS = CATEGORY_PHOTOS['한식'];
+
+function getPhotoUrl(placeId: string, category: string): string {
+  const photos = CATEGORY_PHOTOS[category] ?? DEFAULT_PHOTOS;
+  // Consistent pick per restaurant (last 4 digits of id mod pool size)
+  const idx = parseInt(placeId.slice(-4) || '0', 10) % photos.length;
+  return photos[idx];
+}
+
 function getPriceLevel(categoryName: string): string {
   if (categoryName.includes('스시') || categoryName.includes('오마카세')) return '₩₩₩₩';
   if (categoryName.includes('레스토랑') || categoryName.includes('이탈리안')) return '₩₩₩';
@@ -24,11 +74,6 @@ function formatDistance(meters: string): string {
   const m = Number(meters);
   if (m < 1000) return `${m}m`;
   return `${(m / 1000).toFixed(1)}km`;
-}
-
-function getPhotoUrl(placeId: string, placeName: string): string {
-  // Kakao place thumbnail (unofficial but widely used)
-  return `https://t1.kakaocdn.net/shop/info/v2/${placeId}/thumbnail`;
 }
 
 export async function GET(req: NextRequest) {
@@ -95,7 +140,7 @@ export async function GET(req: NextRequest) {
           priceLevel: getPriceLevel(place.category_name),
           address: place.road_address_name || place.address_name,
           tags: catParts.slice(2, 4),
-          imageUrl: getPhotoUrl(place.id, place.place_name),
+          imageUrl: getPhotoUrl(place.id, mainCat),
           placeUrl: place.place_url,
           phone: place.phone,
         });

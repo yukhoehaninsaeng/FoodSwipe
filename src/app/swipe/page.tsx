@@ -801,9 +801,13 @@ function SwipePageInner() {
               onClick={handleUndo}
               disabled={history.length === 0}
               style={{
-                width: 40, height: 40, fontSize: 17,
-                opacity: history.length > 0 ? 1 : 0.25,
-                color: 'var(--text-secondary)',
+                width: 44, height: 44, fontSize: 18,
+                background: 'var(--bg)',
+                color: history.length > 0 ? 'var(--text-secondary)' : 'var(--text-muted)',
+                opacity: history.length > 0 ? 1 : 0.4,
+                boxShadow: history.length > 0
+                  ? '0 3px 12px rgba(0,0,0,0.10), 0 1px 3px rgba(0,0,0,0.06)'
+                  : 'none',
               }}
             >
               <i className="ti ti-arrow-back-up" aria-hidden="true" />
@@ -812,7 +816,7 @@ function SwipePageInner() {
               <i className="ti ti-x" aria-hidden="true" />
             </button>
             <button className="action-btn btn-like" aria-label="좋아요" onClick={() => handleSwipe('right')}>
-              <i className="ti ti-heart" aria-hidden="true" />
+              <i className="ti ti-heart-filled" aria-hidden="true" />
             </button>
           </div>
         </>
