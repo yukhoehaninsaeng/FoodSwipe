@@ -432,30 +432,11 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
                 </div>
               </div>
 
-              {/* Photo strip */}
-              {restaurant.photos && restaurant.photos.length > 0 && (
-                <div className="card-back-photos">
-                  {restaurant.photos.map((url, i) => (
-                    <img key={i} src={url} alt="" className="card-back-photo-thumb" draggable={false} />
-                  ))}
-                </div>
-              )}
-
-              {/* 1. 주소 */}
-              {restaurant.address && (
-                <div className="card-back-section">
-                  <div className="card-back-section-title">주소</div>
-                  <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                    {restaurant.address}
-                  </div>
-                </div>
-              )}
-
-              {/* 2. 메뉴 */}
+              {/* 1. 메뉴 — 뒤집자마자 바로 보이도록 최상단 배치 */}
               <div className="card-back-section">
                 <div className="card-back-section-title">메뉴</div>
 
-                {/* 2-1. 메뉴 항목 (extraInfo 우선, 없으면 mock 데이터) */}
+                {/* 1-1. 메뉴 항목 (extraInfo 우선, 없으면 mock 데이터) */}
                 {menuList?.map((item, i) => (
                   <div key={i} className="card-back-menu-item">
                     <span className="card-back-menu-emoji">{item.e}</span>
@@ -467,7 +448,7 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
                   </div>
                 ))}
 
-                {/* 2-2. 메뉴 로딩 중 스켈레톤 */}
+                {/* 1-2. 메뉴 로딩 중 스켈레톤 */}
                 {isFetchingMenu && !menuList && (
                   <div className="card-back-menu-skeleton">
                     <div className="skeleton-row" />
@@ -476,7 +457,14 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
                   </div>
                 )}
 
-                {/* 2-3. 카카오맵에서 메뉴보기 */}
+                {/* 1-3. 메뉴 정보 없음 */}
+                {!isFetchingMenu && !menuList?.length && (
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', padding: '2px 0 8px' }}>
+                    등록된 메뉴 정보가 없어요. 아래 지도에서 확인해 주세요.
+                  </div>
+                )}
+
+                {/* 1-4. 카카오맵에서 메뉴보기 */}
                 <a
                   href={restaurant.placeUrl ?? `https://place.map.kakao.com/${restaurant.id}`}
                   target="_blank"
@@ -494,7 +482,7 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
                   카카오맵에서 메뉴보기
                 </a>
 
-                {/* 2-3. 네이버맵에서 메뉴보기 */}
+                {/* 1-5. 네이버맵에서 메뉴보기 */}
                 <a
                   href={`https://map.naver.com/p/search/${encodeURIComponent(restaurant.name + (restaurant.address ? ' ' + restaurant.address : ''))}`}
                   target="_blank"
@@ -512,7 +500,26 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
                 </a>
               </div>
 
-              {/* Hours — extraInfo 우선, 없으면 mock 데이터 */}
+              {/* 2. 사진 — extraInfo에서 불러온 실제 사진 포함 */}
+              {allPhotos.length > 0 && (
+                <div className="card-back-photos">
+                  {allPhotos.map((url, i) => (
+                    <img key={i} src={url} alt="" className="card-back-photo-thumb" draggable={false} />
+                  ))}
+                </div>
+              )}
+
+              {/* 3. 주소 */}
+              {restaurant.address && (
+                <div className="card-back-section">
+                  <div className="card-back-section-title">주소</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                    {restaurant.address}
+                  </div>
+                </div>
+              )}
+
+              {/* 4. 영업시간 — extraInfo 우선, 없으면 mock 데이터 */}
               {(extraInfo?.hours ?? restaurant.hours) && (() => {
                 const hours = (extraInfo?.hours ?? restaurant.hours)!;
                 return (
