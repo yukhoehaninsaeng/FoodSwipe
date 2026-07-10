@@ -44,10 +44,12 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
   const isDraggedRef = useRef(false);
   const velocityRef = useRef({ vx: 0, vy: 0, prevX: 0, prevY: 0, time: 0 });
   const isTop = stackIndex === 0;
+  // Prefetch top 2 cards so the menu is already loaded by the time the next
+  // card is swiped to the front — no wait when the user flips it.
+  const shouldPrefetch = stackIndex <= 1;
 
-  // Prefetch place detail via server proxy + test extra CDN photo paths client-side
   useEffect(() => {
-    if (!isTop || extraInfo !== null || !restaurant.id || !/^\d+$/.test(restaurant.id)) return;
+    if (!shouldPrefetch || extraInfo !== null || !restaurant.id || !/^\d+$/.test(restaurant.id)) return;
     // Note: do NOT skip when restaurant has mock menus — we still need real photos
 
     const testCdn = (path: string): Promise<string | null> =>
@@ -91,7 +93,7 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
       });
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isTop]);
+  }, [shouldPrefetch]);
 
   // Photo array: extraInfo photos > restaurant.photos (mock) > single CDN thumb
   const allPhotos: string[] = (() => {
@@ -102,6 +104,9 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
 
   const clampedIdx = Math.min(photoIdx, allPhotos.length - 1);
   const currentPhoto = allPhotos[clampedIdx];
+
+  const menuList = extraInfo?.menus ?? restaurant.menus;
+  const isFetchingMenu = isTop && extraInfo === null && !!restaurant.id && /^\d+$/.test(restaurant.id);
 
   // Convenience aliases for render
   const dragX = dragPos.x;
@@ -450,25 +455,23 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
                 <div className="card-back-section-title">메뉴</div>
 
                 {/* 2-1. 메뉴 항목 (extraInfo 우선, 없으면 mock 데이터) */}
-                {(() => {
-                  const menuList = extraInfo?.menus ?? restaurant.menus;
-                  if (!menuList || menuList.length === 0) return null;
-                  return menuList.map((item, i) => (
-                    <div key={i} className="card-back-menu-item">
-                      <span className="card-back-menu-emoji">{item.e}</span>
-                      <div className="card-back-menu-info">
-                        <span className="card-back-menu-name">{item.n}</span>
-                        {item.d && <span className="card-back-menu-desc">{item.d}</span>}
-                      </div>
-                      {item.p && <span className="card-back-menu-price">{item.p}</span>}
+                {menuList?.map((item, i) => (
+                  <div key={i} className="card-back-menu-item">
+                    <span className="card-back-menu-emoji">{item.e}</span>
+                    <div className="card-back-menu-info">
+                      <span className="card-back-menu-name">{item.n}</span>
+                      {item.d && <span className="card-back-menu-desc">{item.d}</span>}
                     </div>
-                  ));
-                })()}
+                    {item.p && <span className="card-back-menu-price">{item.p}</span>}
+                  </div>
+                ))}
 
-                {/* 2-2. 메뉴 로딩 중 표시 */}
-                {!extraInfo && isTop && !/^\d+$/.test(restaurant.id ?? '') === false && (
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)', padding: '6px 0' }}>
-                    메뉴 불러오는 중…
+                {/* 2-2. 메뉴 로딩 중 스켈레톤 */}
+                {isFetchingMenu && !menuList && (
+                  <div className="card-back-menu-skeleton">
+                    <div className="skeleton-row" />
+                    <div className="skeleton-row" />
+                    <div className="skeleton-row" />
                   </div>
                 )}
 
@@ -482,7 +485,7 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
                     fontSize: 12, fontWeight: 600,
                     color: '#1A1300', background: '#FFDA00',
                     padding: '8px 12px', borderRadius: 10,
-                    marginTop: (extraInfo?.menus ?? restaurant.menus)?.length ? 10 : 0,
+                    marginTop: menuList?.length ? 10 : 0,
                     textDecoration: 'none',
                   }}
                 >

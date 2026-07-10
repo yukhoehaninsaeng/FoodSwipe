@@ -804,17 +804,19 @@ function SwipePageInner() {
             </button>
           </div>
         ) : (
-          [...visibleCards].reverse().map((restaurant, reversedIdx) => {
-            const stackIndex = visibleCards.length - 1 - reversedIdx;
-            return (
-              <SwipeCard
-                key={`${mode}-${restaurant.id}`}
-                restaurant={restaurant}
-                onSwipe={handleSwipe}
-                stackIndex={stackIndex}
-              />
-            );
-          })
+          <div className="card-stack-inner">
+            {[...visibleCards].reverse().map((restaurant, reversedIdx) => {
+              const stackIndex = visibleCards.length - 1 - reversedIdx;
+              return (
+                <SwipeCard
+                  key={`${mode}-${restaurant.id}`}
+                  restaurant={restaurant}
+                  onSwipe={handleSwipe}
+                  stackIndex={stackIndex}
+                />
+              );
+            })}
+          </div>
         )}
       </div>
 
