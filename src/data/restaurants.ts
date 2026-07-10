@@ -64,8 +64,9 @@ export const FOOD: Restaurant[] = [
     tags: ['삼겹살', '회식'],
     imageUrl: 'https://images.unsplash.com/photo-1590301157890-4810ed352733?w=600&h=800&q=85&auto=format&fit=crop',
     photos: [
-      'https://images.unsplash.com/photo-1590301157890-4810ed352733?w=400&h=300&q=85&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1617195737496-bc30194e3a19?w=400&h=300&q=85&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1590301157890-4810ed352733?w=500&h=500&q=85&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1617195737496-bc30194e3a19?w=500&h=500&q=85&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500&h=500&q=85&auto=format&fit=crop',
     ],
     menus: [
       { e: '🥩', n: '삼겹살', d: '국내산 생삼겹살', p: '15,000원' },
@@ -88,8 +89,9 @@ export const FOOD: Restaurant[] = [
     tags: ['오마카세', '예약필수'],
     imageUrl: 'https://images.unsplash.com/photo-1553621042-f6e147245754?w=600&h=800&q=85&auto=format&fit=crop',
     photos: [
-      'https://images.unsplash.com/photo-1553621042-f6e147245754?w=400&h=300&q=85&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1617622141573-2e59a17e4d96?w=400&h=300&q=85&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1553621042-f6e147245754?w=500&h=500&q=85&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1617622141573-2e59a17e4d96?w=500&h=500&q=85&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500&h=500&q=85&auto=format&fit=crop',
     ],
     menus: [
       { e: '🍣', n: '런치 오마카세', d: '제철 스시 12점', p: '65,000원' },
@@ -111,8 +113,9 @@ export const FOOD: Restaurant[] = [
     tags: ['수제버거', '테이크아웃'],
     imageUrl: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&h=800&q=85&auto=format&fit=crop',
     photos: [
-      'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=300&q=85&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1553979459-d2229ba7433b?w=400&h=300&q=85&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500&h=500&q=85&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1553979459-d2229ba7433b?w=500&h=500&q=85&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=500&h=500&q=85&auto=format&fit=crop',
     ],
     menus: [
       { e: '🍔', n: '클래식 버거', d: '홈메이드 패티+수제소스', p: '13,000원' },
@@ -133,7 +136,9 @@ export const FOOD: Restaurant[] = [
     tags: ['칼국수', '국물맛집'],
     imageUrl: 'https://images.unsplash.com/photo-1569050467447-ce54b3bbc37d?w=600&h=800&q=85&auto=format&fit=crop',
     photos: [
-      'https://images.unsplash.com/photo-1569050467447-ce54b3bbc37d?w=400&h=300&q=85&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1569050467447-ce54b3bbc37d?w=500&h=500&q=85&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1617195737496-bc30194e3a19?w=500&h=500&q=85&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500&h=500&q=85&auto=format&fit=crop',
     ],
     menus: [
       { e: '🍜', n: '얼큰칼국수', d: '진한 육수 직접 뽑은 면', p: '9,000원' },
@@ -155,7 +160,9 @@ export const FOOD: Restaurant[] = [
     tags: ['돈카츠', '세트메뉴'],
     imageUrl: 'https://images.unsplash.com/photo-1580822184713-fc5400e7fe10?w=600&h=800&q=85&auto=format&fit=crop',
     photos: [
-      'https://images.unsplash.com/photo-1580822184713-fc5400e7fe10?w=400&h=300&q=85&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1580822184713-fc5400e7fe10?w=500&h=500&q=85&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1553621042-f6e147245754?w=500&h=500&q=85&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500&h=500&q=85&auto=format&fit=crop',
     ],
     menus: [
       { e: '🥩', n: '로스카츠', d: '등심 170g 두툼한 커트', p: '17,000원' },
@@ -176,8 +183,9 @@ export const FOOD: Restaurant[] = [
     tags: ['파스타', '와인'],
     imageUrl: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=600&h=800&q=85&auto=format&fit=crop',
     photos: [
-      'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=400&h=300&q=85&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1473093295043-cdd812d0e601?w=400&h=300&q=85&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=500&h=500&q=85&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1473093295043-cdd812d0e601?w=500&h=500&q=85&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500&h=500&q=85&auto=format&fit=crop',
     ],
     menus: [
       { e: '🍝', n: '까르보나라', d: '생크림+판체타+파르미지아노', p: '19,000원' },
@@ -198,7 +206,9 @@ export const FOOD: Restaurant[] = [
     tags: ['평양냉면', '만두'],
     imageUrl: 'https://images.unsplash.com/photo-1635363638580-c2809d049eee?w=600&h=800&q=85&auto=format&fit=crop',
     photos: [
-      'https://images.unsplash.com/photo-1635363638580-c2809d049eee?w=400&h=300&q=85&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1635363638580-c2809d049eee?w=500&h=500&q=85&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1617195737496-bc30194e3a19?w=500&h=500&q=85&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500&h=500&q=85&auto=format&fit=crop',
     ],
     menus: [
       { e: '🍜', n: '평양냉면', d: '메밀 직접 뽑기 육수', p: '13,000원' },
@@ -222,8 +232,10 @@ export const CAFE: Restaurant[] = [
     tags: ['스페셜티', '조용한분위기'],
     imageUrl: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600&h=800&q=85&auto=format&fit=crop',
     photos: [
-      'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=400&h=300&q=85&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=400&h=300&q=85&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=500&h=500&q=85&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=500&h=500&q=85&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=500&h=500&q=85&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500&h=500&q=85&auto=format&fit=crop',
     ],
     menus: [
       { e: '☕', n: '에스프레소', d: '에티오피아 예가체프 원두', p: '4,500원' },
@@ -245,7 +257,9 @@ export const CAFE: Restaurant[] = [
     tags: ['핸드드립', '원두선택'],
     imageUrl: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=600&h=800&q=85&auto=format&fit=crop',
     photos: [
-      'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=400&h=300&q=85&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=500&h=500&q=85&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=500&h=500&q=85&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500&h=500&q=85&auto=format&fit=crop',
     ],
     menus: [
       { e: '☕', n: '핸드드립', d: '직접 선택한 원두로 추출', p: '8,000원' },
@@ -265,8 +279,9 @@ export const CAFE: Restaurant[] = [
     tags: ['케이크', '마카롱'],
     imageUrl: 'https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=600&h=800&q=85&auto=format&fit=crop',
     photos: [
-      'https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=400&h=300&q=85&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1488477181946-6428a0291777?w=400&h=300&q=85&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=500&h=500&q=85&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1488477181946-6428a0291777?w=500&h=500&q=85&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500&h=500&q=85&auto=format&fit=crop',
     ],
     menus: [
       { e: '🎂', n: '바스크 치즈케이크', d: '당일 제작 홈베이킹', p: '8,500원' },
@@ -287,7 +302,9 @@ export const CAFE: Restaurant[] = [
     tags: ['브런치', '에그베네딕트'],
     imageUrl: 'https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?w=600&h=800&q=85&auto=format&fit=crop',
     photos: [
-      'https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?w=400&h=300&q=85&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?w=500&h=500&q=85&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=500&h=500&q=85&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500&h=500&q=85&auto=format&fit=crop',
     ],
     menus: [
       { e: '🍳', n: '에그베네딕트', d: '수란+홀란데이즈소스', p: '16,000원' },
@@ -308,7 +325,9 @@ export const CAFE: Restaurant[] = [
     tags: ['차', '조용한'],
     imageUrl: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=600&h=800&q=85&auto=format&fit=crop',
     photos: [
-      'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&h=300&q=85&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=500&h=500&q=85&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=500&h=500&q=85&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500&h=500&q=85&auto=format&fit=crop',
     ],
     menus: [
       { e: '🍵', n: '말차 라떼', d: '우지 말차+오트밀크', p: '7,500원' },

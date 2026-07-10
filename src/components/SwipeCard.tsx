@@ -76,10 +76,10 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
       const extraCdn = (cdnResults as (string | null)[]).filter(Boolean) as string[];
       const apiPhotos: string[] = apiData?.photos ?? [];
 
-      // Merge: API photos first, then CDN extras (de-duped, max 6)
+      // Merge: API photos first, then CDN extras (de-duped, max 5)
       const merged = [...apiPhotos];
       for (const url of extraCdn) {
-        if (!merged.includes(url) && merged.length < 6) merged.push(url);
+        if (!merged.includes(url) && merged.length < 5) merged.push(url);
       }
       // Always ensure the thumbnail is in the list
       if (merged.length === 0) merged.push(restaurant.imageUrl);
@@ -292,7 +292,7 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
               {allPhotos.length > 1 && (
                 <>
                   <div className="photo-progress-bar">
-                    {allPhotos.slice(0, 6).map((_, i) => (
+                    {allPhotos.slice(0, 5).map((_, i) => (
                       <div
                         key={i}
                         className={`photo-progress-segment${i === clampedIdx ? ' active' : i < clampedIdx ? ' done' : ''}`}
@@ -307,7 +307,7 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
                     color: 'rgba(255,255,255,0.90)',
                     pointerEvents: 'none', zIndex: 4,
                   }}>
-                    {clampedIdx + 1} / {Math.min(allPhotos.length, 6)}
+                    {clampedIdx + 1} / {Math.min(allPhotos.length, 5)}
                   </div>
                 </>
               )}

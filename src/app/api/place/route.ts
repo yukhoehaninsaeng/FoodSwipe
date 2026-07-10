@@ -88,7 +88,7 @@ async function fetchHtmlPhotos(id: string): Promise<string[]> {
     for (const url of [...new Set(rebootMatches)]) {
       // skip JS bundles and icons
       if (url.match(/\.(js|css|ico|svg|woff|ttf)(\?|$)/)) continue;
-      if (!photos.includes(url) && photos.length < 6) photos.push(url);
+      if (!photos.includes(url) && photos.length < 5) photos.push(url);
     }
 
     // 3. shop/info CDN photos (business-registered, not just thumbnail)
@@ -96,7 +96,7 @@ async function fetchHtmlPhotos(id: string): Promise<string[]> {
       /https:\/\/t1\.kakaocdn\.net\/shop\/info\/[^"'\s\\<>]+/g,
     ) ?? [];
     for (const url of [...new Set(shopMatches)]) {
-      if (!photos.includes(url) && photos.length < 6) photos.push(url);
+      if (!photos.includes(url) && photos.length < 5) photos.push(url);
     }
 
     return photos;
@@ -117,11 +117,11 @@ export async function GET(req: NextRequest) {
       fetchHtmlPhotos(id),
     ]);
 
-    // Build photos array: JSON API → photo list API → HTML-scraped (de-duped, max 6)
+    // Build photos array: JSON API → photo list API → HTML-scraped (de-duped, max 5)
     const photos: string[] = [];
 
     const addPhoto = (url: string) => {
-      if (url && !photos.includes(url) && photos.length < 6) photos.push(url);
+      if (url && !photos.includes(url) && photos.length < 5) photos.push(url);
     };
 
     if (data) {
