@@ -281,105 +281,108 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
 
             {/* ── Front face ── */}
             <div className="card-face card-face-front">
-              <img
-                key={currentPhoto}
-                src={currentPhoto}
-                alt={restaurant.name}
-                className="card-image"
-                loading="eager"
-                onError={handleImgError}
-                draggable={false}
-              />
-              <div className="card-vignette-top" />
-              <div className="card-vignette-bottom" />
+              {/* Photo section — always square, independent of overall card shape */}
+              <div className="card-photo-frame">
+                <img
+                  key={currentPhoto}
+                  src={currentPhoto}
+                  alt={restaurant.name}
+                  className="card-image"
+                  loading="eager"
+                  onError={handleImgError}
+                  draggable={false}
+                />
+                <div className="card-vignette-top" />
 
-              {/* Photo progress bar + count badge */}
-              {allPhotos.length > 1 && (
-                <>
-                  <div className="photo-progress-bar">
-                    {allPhotos.slice(0, 5).map((_, i) => (
-                      <div
-                        key={i}
-                        className={`photo-progress-segment${i === clampedIdx ? ' active' : i < clampedIdx ? ' done' : ''}`}
-                      />
-                    ))}
-                  </div>
-                  <div style={{
-                    position: 'absolute', top: 22, right: 10,
-                    background: 'rgba(0,0,0,0.40)',
-                    borderRadius: 10, padding: '2px 7px',
-                    fontSize: 10, fontWeight: 700,
-                    color: 'rgba(255,255,255,0.90)',
-                    pointerEvents: 'none', zIndex: 4,
-                  }}>
-                    {clampedIdx + 1} / {Math.min(allPhotos.length, 5)}
-                  </div>
-                </>
-              )}
-
-              {/* Tap zones (full height L/R 30%) + visible arrow buttons */}
-              {allPhotos.length > 1 && (
-                <>
-                  <button
-                    className="photo-nav-btn photo-nav-prev"
-                    onPointerDown={e => e.stopPropagation()}
-                    onClick={e => {
-                      e.stopPropagation();
-                      setPhotoIdx(i => Math.max(0, i - 1));
-                    }}
-                    aria-label="이전 사진"
-                  />
-                  <button
-                    className="photo-nav-btn photo-nav-next"
-                    onPointerDown={e => e.stopPropagation()}
-                    onClick={e => {
-                      e.stopPropagation();
-                      setPhotoIdx(i => Math.min(allPhotos.length - 1, i + 1));
-                    }}
-                    aria-label="다음 사진"
-                  />
-
-                  {/* Visible arrow indicators */}
-                  {clampedIdx > 0 && (
-                    <span style={{
-                      position: 'absolute', left: 8, top: '50%',
-                      transform: 'translateY(-50%)',
-                      width: 28, height: 28, borderRadius: '50%',
-                      background: 'rgba(0,0,0,0.38)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      color: 'rgba(255,255,255,0.92)', fontSize: 15,
+                {/* Photo progress bar + count badge */}
+                {allPhotos.length > 1 && (
+                  <>
+                    <div className="photo-progress-bar">
+                      {allPhotos.slice(0, 5).map((_, i) => (
+                        <div
+                          key={i}
+                          className={`photo-progress-segment${i === clampedIdx ? ' active' : i < clampedIdx ? ' done' : ''}`}
+                        />
+                      ))}
+                    </div>
+                    <div style={{
+                      position: 'absolute', top: 22, right: 10,
+                      background: 'rgba(0,0,0,0.40)',
+                      borderRadius: 10, padding: '2px 7px',
+                      fontSize: 10, fontWeight: 700,
+                      color: 'rgba(255,255,255,0.90)',
                       pointerEvents: 'none', zIndex: 4,
                     }}>
-                      <i className="ti ti-chevron-left" />
-                    </span>
-                  )}
-                  {clampedIdx < allPhotos.length - 1 && (
-                    <span style={{
-                      position: 'absolute', right: 8, top: '50%',
-                      transform: 'translateY(-50%)',
-                      width: 28, height: 28, borderRadius: '50%',
-                      background: 'rgba(0,0,0,0.38)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      color: 'rgba(255,255,255,0.92)', fontSize: 15,
-                      pointerEvents: 'none', zIndex: 4,
-                    }}>
-                      <i className="ti ti-chevron-right" />
-                    </span>
-                  )}
-                </>
-              )}
+                      {clampedIdx + 1} / {Math.min(allPhotos.length, 5)}
+                    </div>
+                  </>
+                )}
 
-              {restaurant.isSponsored && (
-                <div className="card-sponsor-badge">SPONSORED</div>
-              )}
+                {/* Tap zones (full height L/R 30%) + visible arrow buttons */}
+                {allPhotos.length > 1 && (
+                  <>
+                    <button
+                      className="photo-nav-btn photo-nav-prev"
+                      onPointerDown={e => e.stopPropagation()}
+                      onClick={e => {
+                        e.stopPropagation();
+                        setPhotoIdx(i => Math.max(0, i - 1));
+                      }}
+                      aria-label="이전 사진"
+                    />
+                    <button
+                      className="photo-nav-btn photo-nav-next"
+                      onPointerDown={e => e.stopPropagation()}
+                      onClick={e => {
+                        e.stopPropagation();
+                        setPhotoIdx(i => Math.min(allPhotos.length - 1, i + 1));
+                      }}
+                      aria-label="다음 사진"
+                    />
 
-              <div className="swipe-label swipe-label-like" style={{ opacity: likeOpacity }}>LIKE</div>
-              <div className="swipe-label swipe-label-nope" style={{ opacity: nopeOpacity }}>NOPE</div>
-              {superOpacity > 0 && (
-                <div className="swipe-label swipe-label-super" style={{ opacity: superOpacity }}>SUPER</div>
-              )}
+                    {/* Visible arrow indicators */}
+                    {clampedIdx > 0 && (
+                      <span style={{
+                        position: 'absolute', left: 8, top: '50%',
+                        transform: 'translateY(-50%)',
+                        width: 28, height: 28, borderRadius: '50%',
+                        background: 'rgba(0,0,0,0.38)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        color: 'rgba(255,255,255,0.92)', fontSize: 15,
+                        pointerEvents: 'none', zIndex: 4,
+                      }}>
+                        <i className="ti ti-chevron-left" />
+                      </span>
+                    )}
+                    {clampedIdx < allPhotos.length - 1 && (
+                      <span style={{
+                        position: 'absolute', right: 8, top: '50%',
+                        transform: 'translateY(-50%)',
+                        width: 28, height: 28, borderRadius: '50%',
+                        background: 'rgba(0,0,0,0.38)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        color: 'rgba(255,255,255,0.92)', fontSize: 15,
+                        pointerEvents: 'none', zIndex: 4,
+                      }}>
+                        <i className="ti ti-chevron-right" />
+                      </span>
+                    )}
+                  </>
+                )}
 
-              <div className="card-info">
+                {restaurant.isSponsored && (
+                  <div className="card-sponsor-badge">SPONSORED</div>
+                )}
+
+                <div className="swipe-label swipe-label-like" style={{ opacity: likeOpacity }}>LIKE</div>
+                <div className="swipe-label swipe-label-nope" style={{ opacity: nopeOpacity }}>NOPE</div>
+                {superOpacity > 0 && (
+                  <div className="swipe-label swipe-label-super" style={{ opacity: superOpacity }}>SUPER</div>
+                )}
+              </div>
+
+              {/* Info section — opaque panel below the photo */}
+              <div className="card-info-panel">
                 <div className="card-category-tag">{restaurant.category}</div>
                 <div className="card-name">{restaurant.name}</div>
                 <div className="card-meta">
@@ -396,9 +399,7 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
                     <span>{restaurant.aiHint}</span>
                   </div>
                 )}
-                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', marginTop: 5 }}>
-                  탭하면 메뉴 보기 →
-                </div>
+                <div className="card-tap-hint">탭하면 메뉴 보기 →</div>
               </div>
             </div>
 
