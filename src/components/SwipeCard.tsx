@@ -19,6 +19,7 @@ const SWIPE_THRESHOLD = 72;    // distance threshold (px)
 const VELOCITY_THRESHOLD = 380; // quick-flick threshold (px/s)
 const ROTATION_FACTOR = 0.08;
 const FLIP_DRAG_LIMIT = 10;    // min drag to cancel tap→flip
+const MAX_PLACE_PHOTOS = 5;
 
 function openKakaoMap(name: string, address: string) {
   const q = encodeURIComponent(name + (address ? ' ' + address : ''));
@@ -76,13 +77,15 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
       const extraCdn = (cdnResults as (string | null)[]).filter(Boolean) as string[];
       const apiPhotos: string[] = apiData?.photos ?? [];
 
-      // Merge: API photos first, then CDN extras (de-duped, max 6)
-      const merged = [...apiPhotos];
+      // Prefer restaurant/review photos returned by the place API, then fill
+      // any remaining slots with verified CDN photos and the search thumbnail.
+      const merged = apiPhotos.slice(0, MAX_PLACE_PHOTOS);
       for (const url of extraCdn) {
-        if (!merged.includes(url) && merged.length < 6) merged.push(url);
+        if (!merged.includes(url) && merged.length < MAX_PLACE_PHOTOS) merged.push(url);
       }
-      // Always ensure the thumbnail is in the list
-      if (merged.length === 0) merged.push(restaurant.imageUrl);
+      if (!merged.includes(restaurant.imageUrl) && merged.length < MAX_PLACE_PHOTOS) {
+        merged.push(restaurant.imageUrl);
+      }
 
       setExtraInfo({
         menus: apiData?.menus ?? null,
@@ -95,8 +98,8 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
 
   // Photo array: extraInfo photos > restaurant.photos (mock) > single CDN thumb
   const allPhotos: string[] = (() => {
-    if (extraInfo?.photos?.length) return extraInfo.photos;
-    if (restaurant.photos?.length) return restaurant.photos;
+    if (extraInfo?.photos?.length) return extraInfo.photos.slice(0, MAX_PLACE_PHOTOS);
+    if (restaurant.photos?.length) return restaurant.photos.slice(0, MAX_PLACE_PHOTOS);
     return [restaurant.imageUrl];
   })();
 
@@ -292,7 +295,7 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
               {allPhotos.length > 1 && (
                 <>
                   <div className="photo-progress-bar">
-                    {allPhotos.slice(0, 6).map((_, i) => (
+                    {allPhotos.map((_, i) => (
                       <div
                         key={i}
                         className={`photo-progress-segment${i === clampedIdx ? ' active' : i < clampedIdx ? ' done' : ''}`}
@@ -307,7 +310,7 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
                     color: 'rgba(255,255,255,0.90)',
                     pointerEvents: 'none', zIndex: 4,
                   }}>
-                    {clampedIdx + 1} / {Math.min(allPhotos.length, 6)}
+                    {clampedIdx + 1} / {allPhotos.length}
                   </div>
                 </>
               )}
@@ -427,10 +430,16 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
               </div>
 
               {/* Photo strip */}
-              {restaurant.photos && restaurant.photos.length > 0 && (
+              {allPhotos.length > 0 && (
                 <div className="card-back-photos">
-                  {restaurant.photos.map((url, i) => (
-                    <img key={i} src={url} alt="" className="card-back-photo-thumb" draggable={false} />
+                  {allPhotos.map((url, i) => (
+                    <img
+                      key={url}
+                      src={url}
+                      alt={`${restaurant.name} 사진 ${i + 1}`}
+                      className="card-back-photo-thumb"
+                      draggable={false}
+                    />
                   ))}
                 </div>
               )}
@@ -469,6 +478,12 @@ export default function SwipeCard({ restaurant, onSwipe, stackIndex }: SwipeCard
                 {!extraInfo && isTop && !/^\d+$/.test(restaurant.id ?? '') === false && (
                   <div style={{ fontSize: 11, color: 'var(--text-muted)', padding: '6px 0' }}>
                     메뉴 불러오는 중…
+                  </div>
+                )}
+
+                {extraInfo && !extraInfo.menus?.length && !restaurant.menus?.length && (
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                    등록된 메뉴와 가격 정보가 없습니다. 아래 지도에서 최신 메뉴를 확인해 주세요.
                   </div>
                 )}
 

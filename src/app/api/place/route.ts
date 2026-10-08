@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 const KAKAO_API_KEY = process.env.KAKAO_REST_API_KEY;
+const MAX_PLACE_PHOTOS = 5;
 
 function parsePriceStr(s: string): string {
   if (!s) return '';
@@ -59,7 +60,7 @@ async function fetchPhotoList(id: string): Promise<string[]> {
     return list
       .map((p) => p.orgurl ?? p.url ?? '')
       .filter(Boolean)
-      .slice(0, 8) as string[];
+      .slice(0, MAX_PLACE_PHOTOS) as string[];
   } catch {
     return [];
   }
@@ -88,7 +89,7 @@ async function fetchHtmlPhotos(id: string): Promise<string[]> {
     for (const url of [...new Set(rebootMatches)]) {
       // skip JS bundles and icons
       if (url.match(/\.(js|css|ico|svg|woff|ttf)(\?|$)/)) continue;
-      if (!photos.includes(url) && photos.length < 6) photos.push(url);
+      if (!photos.includes(url) && photos.length < MAX_PLACE_PHOTOS) photos.push(url);
     }
 
     // 3. shop/info CDN photos (business-registered, not just thumbnail)
@@ -96,7 +97,7 @@ async function fetchHtmlPhotos(id: string): Promise<string[]> {
       /https:\/\/t1\.kakaocdn\.net\/shop\/info\/[^"'\s\\<>]+/g,
     ) ?? [];
     for (const url of [...new Set(shopMatches)]) {
-      if (!photos.includes(url) && photos.length < 6) photos.push(url);
+      if (!photos.includes(url) && photos.length < MAX_PLACE_PHOTOS) photos.push(url);
     }
 
     return photos;
@@ -117,11 +118,11 @@ export async function GET(req: NextRequest) {
       fetchHtmlPhotos(id),
     ]);
 
-    // Build photos array: JSON API → photo list API → HTML-scraped (de-duped, max 6)
+    // Build photos array: restaurant main photo → review photos → HTML photos.
     const photos: string[] = [];
 
     const addPhoto = (url: string) => {
-      if (url && !photos.includes(url) && photos.length < 6) photos.push(url);
+      if (url && !photos.includes(url) && photos.length < MAX_PLACE_PHOTOS) photos.push(url);
     };
 
     if (data) {
